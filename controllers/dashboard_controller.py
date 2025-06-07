@@ -27,3 +27,7 @@ def receive_data():
     print(f"Datos recibidos: {data}")
     save_agent_data(data)
     return jsonify({"mensaje": "Datos recibidos correctamente"}), 200
+
+@dashboard_bp.route('/datos', methods=['POST'])
+def recibir_datos_android():
+    return receive_data()  # Reutiliza la misma lógica
