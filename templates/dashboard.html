@@ -298,52 +298,52 @@
             else return "Alto";
         }
 
-        function fetchServerData() {
-            fetch('/get_agent_data')
-                .then(response => response.json())
-                .then(data => {
-                    const tableBody = document.querySelector('#serverDataTable tbody');
-                    const noDataMessage = document.getElementById('noDataMessage');
-                    tableBody.innerHTML = '';
+function fetchServerData() {
+    fetch('/get_agent_data')
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.querySelector('#serverDataTable tbody');
+            const noDataMessage = document.getElementById('noDataMessage');
+            tableBody.innerHTML = '';
 
-                    if (Object.keys(data).length === 0) {
-                        noDataMessage.style.display = 'block';
+            if (Object.keys(data).length === 0) {
+                noDataMessage.style.display = 'block';
+            } else {
+                noDataMessage.style.display = 'none';
+
+                // Recorre los datos tal como vienen, ya ordenados por backend
+                for (const hostname in data) {
+                    const agentData = data[hostname];
+                    const row = tableBody.insertRow();
+
+                    row.insertCell().textContent = agentData.hostname || 'Desconocido';
+                    row.insertCell().textContent = formatDatetime(agentData.timestamp);
+                    row.insertCell().textContent = `${agentData.cpu_percent ? agentData.cpu_percent.toFixed(1) : 'N/A'}%`;
+                    row.insertCell().textContent = `${agentData.memory_percent ? agentData.memory_percent.toFixed(1) : 'N/A'}%`;
+                    row.insertCell().textContent = `${agentData.disk_percent ? agentData.disk_percent.toFixed(1) : 'N/A'}%`;
+                    row.insertCell().textContent = `${agentData.bytes_sent_mb ? agentData.bytes_sent_mb.toFixed(2) : 'N/A'}`;
+                    row.insertCell().textContent = `${agentData.bytes_recv_mb ? agentData.bytes_recv_mb.toFixed(2) : 'N/A'}`;
+                    row.insertCell().textContent = `${agentData.cpu_temperature !== undefined && agentData.cpu_temperature !== null ? agentData.cpu_temperature.toFixed(1) + '°C' : 'N/A'}`;
+
+                    const riskCell = row.insertCell();
+                    if (agentData.calculated_risk_percent !== undefined) {
+                        const riskDiv = document.createElement('div');
+                        riskDiv.classList.add('risk-indicator', getRiskClass(agentData.calculated_risk_percent));
+                        riskDiv.textContent = `${getRiskLabel(agentData.calculated_risk_percent)} (${agentData.calculated_risk_percent.toFixed(1)}%)`;
+                        riskCell.appendChild(riskDiv);
                     } else {
-                        noDataMessage.style.display = 'none';
-
-                        // Recorre los datos tal como vienen, ya ordenados por backend
-                    
-                        for (const hostname of servidoresOrdenados) {
-                            const agentData = data[hostname];
-                            const row = tableBody.insertRow();
-
-                            row.insertCell().textContent = agentData.hostname || 'Desconocido';
-                            row.insertCell().textContent = formatDatetime(agentData.timestamp);
-                            row.insertCell().textContent = `${agentData.cpu_percent ? agentData.cpu_percent.toFixed(1) : 'N/A'}%`;
-                            row.insertCell().textContent = `${agentData.memory_percent ? agentData.memory_percent.toFixed(1) : 'N/A'}%`;
-                            row.insertCell().textContent = `${agentData.disk_percent ? agentData.disk_percent.toFixed(1) : 'N/A'}%`;
-                            row.insertCell().textContent = `${agentData.bytes_sent_mb ? agentData.bytes_sent_mb.toFixed(2) : 'N/A'}`;
-                            row.insertCell().textContent = `${agentData.bytes_recv_mb ? agentData.bytes_recv_mb.toFixed(2) : 'N/A'}`;
-                            row.insertCell().textContent = `${agentData.cpu_temperature !== undefined && agentData.cpu_temperature !== null ? agentData.cpu_temperature.toFixed(1) + '°C' : 'N/A'}`;
-
-                            const riskCell = row.insertCell();
-                            if (agentData.calculated_risk_percent !== undefined) {
-                                const riskDiv = document.createElement('div');
-                                riskDiv.classList.add('risk-indicator', getRiskClass(agentData.calculated_risk_percent));
-                                riskDiv.textContent = `${getRiskLabel(agentData.calculated_risk_percent)} (${agentData.calculated_risk_percent.toFixed(1)}%)`;
-                                riskCell.appendChild(riskDiv);
-                            } else {
-                                riskCell.textContent = 'N/A';
-                            }
-                        }
+                        riskCell.textContent = 'N/A';
                     }
-                })
-                .catch(error => {
-                    console.error('Error fetching server data:', error);
-                    document.getElementById('noDataMessage').textContent = 'Error al cargar datos de servidores.';
-                    document.getElementById('noDataMessage').style.display = 'block';
-                });
-        }
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching server data:', error);
+            document.getElementById('noDataMessage').textContent = 'Error al cargar datos de servidores.';
+            document.getElementById('noDataMessage').style.display = 'block';
+        });
+}
+
 
         document.addEventListener('DOMContentLoaded', fetchServerData);
         setInterval(fetchServerData, 5000);
