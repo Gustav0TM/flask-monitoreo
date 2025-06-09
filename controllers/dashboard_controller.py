@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, jsonify, request, session, redirect, url_for
-from models.agent_data import save_agent_data, get_all_agent_data, ordenar_dispositivos_por_estado
+from models.agent_data import save_agent_data, get_all_agent_data_sorted  # Cambiado aquí
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -14,9 +14,10 @@ def get_agent_data():
     if 'usuario' not in session:
         return jsonify({"error": "No autorizado"}), 401
 
-    ordenar_dispositivos_por_estado()  # <-- Aquí ordenas antes de devolver los datos
+    # Ya no ordenamos aquí, la función retorna ordenado
+    datos_ordenados = get_all_agent_data_sorted()
 
-    return jsonify(get_all_agent_data())
+    return jsonify(datos_ordenados)
 
 @dashboard_bp.route('/submit_agent_data', methods=['POST'])
 def submit_agent_data():

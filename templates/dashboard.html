@@ -311,13 +311,8 @@
                     } else {
                         noDataMessage.style.display = 'none';
 
-                        // Ordenar: activos primero (activo: true), luego inactivos
-                        const servidoresOrdenados = Object.keys(data).sort((a, b) => {
-                            const activoA = data[a].activo ? 0 : 1;
-                            const activoB = data[b].activo ? 0 : 1;
-                            return activoA - activoB;
-                        });
-
+                        // Recorre los datos tal como vienen, ya ordenados por backend
+                    
                         for (const hostname of servidoresOrdenados) {
                             const agentData = data[hostname];
                             const row = tableBody.insertRow();
