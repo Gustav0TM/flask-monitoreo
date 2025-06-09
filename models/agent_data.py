@@ -7,17 +7,20 @@ def save_agent_data(data):
     hostname = data.get("hostname")
     if hostname:
         data["timestamp"] = int(datetime.datetime.now().timestamp())
-                
         latest_agent_data[hostname] = data
 
-def limpiar_dispositivos_inactivos():
+def ordenar_dispositivos_por_estado():
     ahora = time.time()
     limite = ahora - 300  # 5 minutos = 300 segundos
-    # Filtra y deja solo los dispositivos con timestamp reciente
-    activos = {k: v for k, v in latest_agent_data.items() if v.get("timestamp", 0) > limite}
-    # Actualiza el dict global
+
+    # Ordena primero activos (timestamp > limite), luego inactivos
+    ordenados = dict(sorted(
+        latest_agent_data.items(),
+        key=lambda item: 0 if item[1].get("timestamp", 0) > limite else 1
+    ))
+
     latest_agent_data.clear()
-    latest_agent_data.update(activos)
+    latest_agent_data.update(ordenados)
 
 def get_all_agent_data():
     return latest_agent_data

@@ -279,33 +279,23 @@
         © 2025 AI Inversiones Palo Alto II - Todos los derechos reservados.
     </footer>
 
-    <script>
+     <script>
         function formatDatetime(timestamp) {
-            if (timestamp === null || timestamp === undefined) {
-                return "N/A";
-            }
-            const date = new Date(timestamp * 1000); // Multiplica por 1000 porque JavaScript usa milisegundos
-            return date.toLocaleString(); // Formato local de fecha y hora
+            if (timestamp === null || timestamp === undefined) return "N/A";
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleString();
         }
 
         function getRiskClass(riskPercent) {
-            if (riskPercent < 40) {
-                return "risk-low";
-            } else if (riskPercent < 70) {
-                return "risk-medium";
-            } else {
-                return "risk-high";
-            }
+            if (riskPercent < 40) return "risk-low";
+            else if (riskPercent < 70) return "risk-medium";
+            else return "risk-high";
         }
 
         function getRiskLabel(riskPercent) {
-            if (riskPercent < 40) {
-                return "Bajo";
-            } else if (riskPercent < 70) {
-                return "Medio";
-            } else {
-                return "Alto";
-            }
+            if (riskPercent < 40) return "Bajo";
+            else if (riskPercent < 70) return "Medio";
+            else return "Alto";
         }
 
         function fetchServerData() {
@@ -314,15 +304,24 @@
                 .then(data => {
                     const tableBody = document.querySelector('#serverDataTable tbody');
                     const noDataMessage = document.getElementById('noDataMessage');
-                    tableBody.innerHTML = ''; // Limpiar tabla antes de añadir nuevos datos
+                    tableBody.innerHTML = '';
 
                     if (Object.keys(data).length === 0) {
                         noDataMessage.style.display = 'block';
                     } else {
                         noDataMessage.style.display = 'none';
-                        for (const hostname in data) {
+
+                        // Ordenar: activos primero (activo: true), luego inactivos
+                        const servidoresOrdenados = Object.keys(data).sort((a, b) => {
+                            const activoA = data[a].activo ? 0 : 1;
+                            const activoB = data[b].activo ? 0 : 1;
+                            return activoA - activoB;
+                        });
+
+                        for (const hostname of servidoresOrdenados) {
                             const agentData = data[hostname];
                             const row = tableBody.insertRow();
+
                             row.insertCell().textContent = agentData.hostname || 'Desconocido';
                             row.insertCell().textContent = formatDatetime(agentData.timestamp);
                             row.insertCell().textContent = `${agentData.cpu_percent ? agentData.cpu_percent.toFixed(1) : 'N/A'}%`;
@@ -351,15 +350,8 @@
                 });
         }
 
-        // Llamar a la función al cargar la página
         document.addEventListener('DOMContentLoaded', fetchServerData);
-
-        // Actualizar datos cada 2 minutos (120000 milisegundos)
-        setInterval(fetchServerData, 120000);
-
-
-        
-
+        setInterval(fetchServerData, 5000);
     </script>
         {% if session.get('usuario') %}
         <form action="{{ url_for('auth.logout') }}" method="get" style="position: fixed; bottom: 20px; right: 20px;">
