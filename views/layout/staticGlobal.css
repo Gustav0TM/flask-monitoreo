@@ -1,0 +1,332 @@
+/* ================== Global - Estilos generales para toda la página ================== */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right, #2c3e50, #3498db); /* Fondo con degradado azul */
+    color: #fff;
+    margin: 0;
+    padding: 0;
+
+.info-particiones {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.info-particion-item {
+    margin-bottom: 0.5rem;
+}
+}
+
+/* Variables globales para colores y fuentes */
+:root {
+    --primary-color: #00bcd4;          /* Color principal (celeste) */
+    --primary-color-dark: #00838f;     /* Versión más oscura del color principal */
+    --secondary-color: #7b1fa2;        /* Color secundario (morado) */
+    --accent-color: #ffee58;           /* Color de acento (amarillo) */
+    --danger-color: #ff5252;           /* Color para estados de peligro */
+    --success-color: #69f0ae;          /* Color para estados de éxito */
+    --warning-color: #ffd740;          /* Color para estados de advertencia */
+    --background-color: #1a202c;       /* Fondo oscuro general */
+    --card-background: #2d3748;        /* Fondo de las tarjetas o cuadros */
+    --text-color: #e2e8f0;             /* Color de texto claro */
+    --border-color: #4a5568;           /* Color para bordes */
+    --font-main: 'Roboto Mono', monospace; /* Fuente para texto general */
+    --font-heading: 'Orbitron', sans-serif; /* Fuente para títulos */
+}
+
+/* ================== Títulos generales h1, h2 ================== */
+
+h1, h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-align: center;
+    font-family: var(--font-heading);
+    letter-spacing: 1px;
+}
+
+/* ================== Formularios globales (Login, otros inputs) ================== */
+
+input[type="text"],
+input[type="password"],
+input[type="number"] {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: #3b4559;
+    color: var(--text-color);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.3);
+}
+
+button {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    font-size: 1.1rem;
+    padding: 0.9rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+button:hover {
+    background-color: var(--primary-color-dark);
+    transform: translateY(-2px);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.2rem;
+}
+
+/* ================== Login - Formulario de inicio de sesión ================== */
+
+.login-form-container {
+    background-color: var(--card-background);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    border: 1px solid var(--border-color);
+    width: 100%;
+    max-width: 400px;
+    margin: 3rem auto;
+}
+
+.login-form-container h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+}
+
+.login-form-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-form-container .form-group {
+    width: 80%;
+    max-width: 300px;
+    text-align: left;
+}
+
+.login-form-container .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.login-form-container .form-group input {
+    width: 100%;
+}
+
+.login-form-container button {
+    max-width: 200px;
+}
+
+/* ================== Dashboard - Vista principal de dispositivos ================== */
+
+.dashboard-body {
+    background-color: var(--background-color);
+    font-family: var(--font-main);
+    color: var(--text-color);
+}
+
+/* Encabezado del dashboard */
+header.dashboard-header {
+    background: linear-gradient(90deg, var(--primary-color-dark), var(--secondary-color));
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    font-family: var(--font-heading);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* Contenedor principal del dashboard */
+main.dashboard-main {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    background: var(--card-background);
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    border: 1px solid var(--border-color);
+}
+
+/* Tabla de dispositivos */
+.server-table-container {
+    overflow-x: auto;
+    margin-top: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.server-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.server-table th, .server-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+    font-size: 0.9em;
+}
+
+.server-table th {
+    background-color: var(--primary-color-dark);
+    color: white;
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+}
+
+.server-table tbody tr:nth-child(even) {
+    background-color: #3b4559;
+}
+
+.server-table tbody tr:hover {
+    background-color: #4a5568;
+    transition: background-color 0.3s ease;
+}
+
+/* Indicadores de riesgo en dashboard */
+.risk-indicator {
+    font-size: 0.8em;
+    padding: 0.4rem 0.8rem;
+    margin: 0;
+    border-radius: 5px;
+    color: var(--background-color);
+    font-weight: bold;
+}
+
+.risk-low {
+    background-color: var(--success-color);
+}
+
+.risk-medium {
+    background-color: var(--warning-color);
+}
+
+.risk-high {
+    background-color: var(--danger-color);
+}
+
+/* ================== Vista Detalle Dispositivo - Página detalle.html ================== */
+
+/* Contenedor general del detalle */
+.dashboard-main {
+    max-width: 100%;
+    margin: 1rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Título con indicador de riesgo al costado */
+.titulo-con-riesgo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.titulo-central {
+    text-align: center;
+    margin: 0;
+}
+
+/* Contenedor de los gráficos */
+.contenedor-graficos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 8px; /* Separación mínima entre los cuadros */
+    width: 100%;
+    max-width: 1400px;
+    margin-top: 1rem;
+}
+
+/* Tarjeta de cada gráfico */
+.grafico-contenedor {
+    background-color: var(--card-background);
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 400px; /* Altura unificada para todos los cuadros */
+}
+
+/* Título de cada gráfico */
+.grafico-contenedor h3 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+    font-family: var(--font-heading);
+}
+
+/* Gráficos lineales (CPU, Tx/Rx) */
+.grafico-contenedor.lineal canvas {
+    width: 100%;
+    height: 300px;
+    max-height: 300px;
+    margin: 0 auto;
+}
+
+/* Gráficos circulares (Memoria, Disco) bien centrados */
+.grafico-contenedor.circular {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.grafico-contenedor.circular canvas {
+    width: 100%;
+    height: 300px;
+    max-height: 300px;
+    margin: 0 auto;
+}
+
+/* Indicador de riesgo flotante en la vista detalle */
+.indicador-riesgo {
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    font-weight: bold;
+    color: var(--background-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    background-color: #4a5568;
+    text-align: center;
+    min-width: 200px;
+}

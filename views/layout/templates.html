@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block titulo %}Sistema Predictivo de Fallas{% endblock %}</title>
+    
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='staticGlobal.css') }}">
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+    <!-- Contenido principal -->
+    <main>
+        {% block contenido %}{% endblock %}
+    </main>
+
+    <!-- Librerías externas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+    <!-- JS Global -->
+    <script src="{{ url_for('static', filename='staticGlobal.js') }}"></script>
+
+    <!-- Bloque opcional para JS adicional por vista -->
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

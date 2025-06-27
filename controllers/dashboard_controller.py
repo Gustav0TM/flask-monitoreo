@@ -7,14 +7,13 @@ dashboard_bp = Blueprint('dashboard', __name__)
 def index():
     if 'usuario' not in session:
         return redirect(url_for('auth.login'))
-    return render_template('dashboard.html')
+    return render_template('dashboard/dashboard.html')
 
 @dashboard_bp.route('/get_agent_data')
 def get_agent_data():
     if 'usuario' not in session:
         return jsonify({"error": "No autorizado"}), 401
 
-    # Obtenemos los datos ordenados por timestamp descendente
     datos_ordenados = get_all_agent_data_sorted()
     return jsonify(datos_ordenados)
 
@@ -27,10 +26,9 @@ def submit_agent_data():
 @dashboard_bp.route('/receive_data', methods=['POST'])
 def receive_data():
     data = request.get_json()
-    print(f"Datos recibidos: {data}")
     save_agent_data(data)
     return jsonify({"mensaje": "Datos recibidos correctamente"}), 200
 
 @dashboard_bp.route('/datos', methods=['POST'])
 def recibir_datos_android():
-    return receive_data()  # Reutiliza la misma lógica
+    return receive_data()
