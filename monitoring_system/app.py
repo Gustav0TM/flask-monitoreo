@@ -8,6 +8,9 @@ from monitoring_system.controllers.dispositivo_controller import dispositivo_bp
 app = Flask(__name__, template_folder='views', static_folder='views/layout')
 app.secret_key = "clave_supersecreta"
 
+# 🔽 ESTE PRINT ES PARA VERIFICAR EN RENDER
+print("🔥 Versión desplegada el 28/06/2025 - ACTIVA")
+
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(dispositivo_bp) #este
