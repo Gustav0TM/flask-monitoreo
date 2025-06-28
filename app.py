@@ -1,0 +1,14 @@
+from flask import Flask
+from controllers.dashboard_controller import dashboard_bp
+from controllers.auth_controller import auth_bp
+from controllers.dispositivo_controller import dispositivo_bp #este
+
+
+app = Flask(__name__, template_folder='views', static_folder='views/layout')
+app.secret_key = "clave_supersecreta"
+
+app.register_blueprint(dashboard_bp)
+app.register_blueprint(auth_bp)
+app.register_blueprint(dispositivo_bp) #este
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
