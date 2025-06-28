@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, jsonify, request, session, redirect, url_for
-from models.agent_data import save_agent_data, get_all_agent_data_sorted
+from monitoring_system.models.agent_data import save_agent_data, get_all_agent_data_sorted
 
 dashboard_bp = Blueprint('dashboard', __name__)
 

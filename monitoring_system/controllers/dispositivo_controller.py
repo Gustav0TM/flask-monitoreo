@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, jsonify
-from models.agent_data import obtener_datos_historicos_por_host, latest_agent_data
+from monitoring_system.models.agent_data import obtener_datos_historicos_por_host, latest_agent_data
 
 dispositivo_bp = Blueprint('dispositivo', __name__)
 

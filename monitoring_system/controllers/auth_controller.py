@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from models.usuario_modelo import verificar_credenciales
+from monitoring_system.models.usuario_modelo import verificar_credenciales
 
 auth_bp = Blueprint('auth', __name__)
 
