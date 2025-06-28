@@ -1,0 +1,308 @@
+{% extends 'layout/templates.html' %}
+
+{% block titulo %}Detalle del Dispositivo - {{ hostname }}{% endblock %}
+
+{% block contenido %}
+<header class="dashboard-header">
+    Detalle del Dispositivo: {{ hostname }}
+</header>
+
+<main class="dashboard-main">
+    <div class="titulo-con-riesgo">
+        <h2 class="titulo-central">Monitoreo Gráfico en Tiempo Real</h2>
+        <div id="riskIndicator" class="indicador-riesgo">Riesgo: N/A</div>
+    </div>
+
+    <div class="contenedor-graficos">
+        
+        <div class="grafico-contenedor lineal">
+            <h3>CPU (%)</h3>
+            <canvas id="cpuChart"></canvas>
+        </div>
+
+        <div class="grafico-contenedor circular">
+            <h3>Memoria (%)</h3>
+            <canvas id="memoryChart"></canvas>
+        </div>
+
+        <div class="grafico-contenedor circular">
+            <h3>Disco (%) - Particiones</h3>
+            <canvas id="diskChart"></canvas>
+        </div>
+
+        <div class="grafico-contenedor lineal">
+            <h3>Bytes Tx / Rx (MB)</h3>
+            <canvas id="txRxChart"></canvas>
+        </div>
+
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+let cpuChartInstance = null;
+let memoryChartInstance = null;
+let diskChartInstance = null;
+let txRxChartInstance = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const hostname = "{{ hostname }}";
+
+    function actualizarDetalle() {
+        fetch(`/get_device_data/${hostname}`)
+            .then(response => response.json())
+            .then(data => {
+                renderCharts(data);
+                mostrarRiesgo(data);
+            })
+            .catch(err => console.error('Error:', err));
+    }
+
+    actualizarDetalle();
+    setInterval(actualizarDetalle, 5000);
+});
+
+function renderCharts(data) {
+    const labels = data.timestamps.map(ts => {
+        const date = new Date(ts * 1000);
+        return date.toLocaleTimeString();
+    });
+
+    if (cpuChartInstance) cpuChartInstance.destroy();
+    if (memoryChartInstance) memoryChartInstance.destroy();
+    if (diskChartInstance) diskChartInstance.destroy();
+    if (txRxChartInstance) txRxChartInstance.destroy();
+
+    // CPU
+    cpuChartInstance = new Chart(document.getElementById('cpuChart'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'CPU (%)',
+                data: data.cpu,
+                borderColor: '#00bcd4',
+                backgroundColor: '#00bcd4',
+                fill: false,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, suggestedMax: 100, ticks: { stepSize: 10 }, grid: { color: '#4a5568' } },
+                x: { grid: { color: '#4a5568' } }
+            },
+            plugins: {
+                legend: { position: 'top' },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    offset: 4,
+                    color: 'black',
+                    font: { size: 10, weight: 'normal' },
+                    rotation: 0,
+                    formatter: value => value.toFixed(1) + ' %'
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    // Memoria
+    const memoriaUso = data.memory.length > 0 ? data.memory[data.memory.length - 1] : 0;
+    memoryChartInstance = new Chart(document.getElementById('memoryChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Usado (%)', 'Libre (%)'],
+            datasets: [{ data: [memoriaUso, 100 - memoriaUso], backgroundColor: ['#ffee58', '#4a5568'] }]
+        },
+        options: {
+            cutout: '70%',
+            plugins: {
+                legend: { position: 'top' },
+                datalabels: {
+                    color: 'white',
+                    font: { weight: 'normal', size: 12 },
+                    formatter: value => `${value.toFixed(1)}%`
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+// ===== Disco - Particiones (Usado y Libre con GB sobre las barras y porcentajes en la leyenda ordenados) =====
+
+// 1. Obtener datos de particiones
+const particiones = data.disks || {};
+const particionesLabels = Object.keys(particiones);
+const particionesUsado = Object.values(particiones);
+const particionesLibre = particionesUsado.map(uso => 100 - uso);
+
+const particionesTotalGb = data.disks_total_gb || {};
+const particionesUsadoGb = data.disks_used_gb || {};
+
+// 2. Solo los nombres al pie, en el mismo orden
+const etiquetas = particionesLabels;
+
+// 3. Construir leyenda dinámica en el mismo orden que las barras
+let leyendaUsado = 'Usado (';
+let leyendaLibre = 'Libre (';
+
+etiquetas.forEach(label => {
+    const porcentajeUsado = particiones[label] || 0;
+    const porcentajeLibre = 100 - porcentajeUsado;
+    leyendaUsado += `${label}: ${porcentajeUsado.toFixed(1)}% | `;
+    leyendaLibre += `${label}: ${porcentajeLibre.toFixed(1)}% | `;
+});
+
+// Eliminar el último separador " | " y cerrar paréntesis
+leyendaUsado = leyendaUsado.slice(0, -3) + ')';
+leyendaLibre = leyendaLibre.slice(0, -3) + ')';
+
+// 4. Render del gráfico
+diskChartInstance = new Chart(document.getElementById('diskChart'), {
+    type: 'bar',
+    data: {
+        labels: etiquetas,
+        datasets: [
+            {
+                label: leyendaUsado,
+                data: particionesUsado,
+                backgroundColor: '#7b1fa2',
+                datalabels: {
+                    color: 'white',
+                    font: { size: 10, weight: 'bold' },
+                    anchor: 'end',
+                    align: 'end',
+                    formatter: (value, ctx) => {
+                        const label = particionesLabels[ctx.dataIndex];
+                        const usadoGb = particionesUsadoGb[label] || 0;
+                        return `${usadoGb} GB`;
+                    }
+                }
+            },
+            {
+                label: leyendaLibre,
+                data: particionesLibre,
+                backgroundColor: '#4a5568',
+                datalabels: {
+                    color: 'white',
+                    font: { size: 10, weight: 'bold' },
+                    anchor: 'end',
+                    align: 'end',
+                    formatter: (value, ctx) => {
+                        const label = particionesLabels[ctx.dataIndex];
+                        const totalGb = particionesTotalGb[label] || 0;
+                        const usadoGb = particionesUsadoGb[label] || 0;
+                        const libreGb = (totalGb - usadoGb).toFixed(1);
+                        return `${libreGb} GB`;
+                    }
+                }
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: { beginAtZero: true, suggestedMax: 100, ticks: { stepSize: 10 }, grid: { color: '#4a5568' } },
+            x: { grid: { color: '#4a5568' } }
+        },
+        plugins: {
+            legend: { position: 'top' }
+        }
+    },
+    plugins: [ChartDataLabels]
+});
+
+
+
+    // Tx/Rx
+    txRxChartInstance = new Chart(document.getElementById('txRxChart'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Bytes Tx (MB)',
+                    data: data.tx,
+                    backgroundColor: '#69f0ae',
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        offset: 4,
+                        color: '#000',
+                        font: { size: 10 },
+                        rotation: -90,
+                        formatter: value => value.toFixed(2) + ' MB'
+                    }
+                },
+                {
+                    label: 'Bytes Rx (MB)',
+                    data: data.rx,
+                    backgroundColor: '#ff5252',
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'start',
+                        offset: -4,
+                        color: '#000',
+                        font: { size: 10 },
+                        rotation: -90,
+                        formatter: value => value.toFixed(2) + ' MB'
+                    }
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: calcularStepSize(data.tx, data.rx) }, grid: { color: '#4a5568' } },
+                x: { grid: { color: '#4a5568' } }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { padding: 20 } }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+}
+
+function mostrarRiesgo(data) {
+    const riskIndicator = document.getElementById('riskIndicator');
+    if (!riskIndicator) return;
+
+    if (data.riesgo === undefined || data.riesgo === null) {
+        riskIndicator.textContent = "Riesgo: N/A";
+        riskIndicator.style.backgroundColor = "#4a5568";
+    } else {
+        if (data.riesgo < 40) {
+            riskIndicator.style.backgroundColor = "var(--success-color)";
+            riskIndicator.textContent = `Riesgo: Bajo (${data.riesgo.toFixed(1)}%)`;
+        } else if (data.riesgo < 70) {
+            riskIndicator.style.backgroundColor = "var(--warning-color)";
+            riskIndicator.textContent = `Riesgo: Medio (${data.riesgo.toFixed(1)}%)`;
+        } else {
+            riskIndicator.style.backgroundColor = "var(--danger-color)";
+            riskIndicator.textContent = `Riesgo: Alto (${data.riesgo.toFixed(1)}%)`;
+        }
+    }
+}
+
+function calcularStepSize(tx, rx) {
+    const maxValor = Math.max(...tx, ...rx);
+    if (maxValor <= 10) return 1;
+    if (maxValor <= 50) return 5;
+    if (maxValor <= 100) return 10;
+    if (maxValor <= 500) return 50;
+    if (maxValor <= 1000) return 100;
+    return Math.ceil(maxValor / 10);
+}
+</script>
+{% endblock %}
