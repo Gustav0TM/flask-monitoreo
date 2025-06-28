@@ -1,7 +1,8 @@
 from flask import Flask
-from controllers.dashboard_controller import dashboard_bp
-from controllers.auth_controller import auth_bp
-from controllers.dispositivo_controller import dispositivo_bp #este
+from monitoring_system.controllers.dashboard_controller import dashboard_bp
+from monitoring_system.controllers.auth_controller import auth_bp
+from monitoring_system.controllers.dispositivo_controller import dispositivo_bp
+
 
 
 app = Flask(__name__, template_folder='views', static_folder='views/layout')
