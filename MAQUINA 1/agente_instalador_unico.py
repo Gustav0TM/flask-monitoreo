@@ -16,24 +16,24 @@ if getattr(sys, 'frozen', False):
 else:
     RUTA_BASE = os.path.dirname(os.path.abspath(__file__))
 
-# Ruta de OpenHardwareMonitor dentro de ohm_files
-RUTA_OHM = os.path.join(RUTA_BASE, "OpenHardwareMonitor", "OpenHardwareMonitor.exe")
+# Ruta de LibreHardwareMonitor dentro de LibreHardwareMonitor-net472
+RUTA_LHM = os.path.join(RUTA_BASE, "LibreHardwareMonitor-net472", "LibreHardwareMonitor.exe")
 
-def lanzar_ohm():
-    """ Inicia OpenHardwareMonitor de forma oculta """
+def lanzar_lhm():
+    """ Inicia LibreHardwareMonitor de forma oculta """
     try:
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        subprocess.Popen([RUTA_OHM], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, startupinfo=startupinfo)
-        print("✅ OpenHardwareMonitor iniciado.")
+        subprocess.Popen([RUTA_LHM], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, startupinfo=startupinfo)
+        print("✅ LibreHardwareMonitor iniciado.")
     except Exception as e:
-        print(f"❌ Error al iniciar OpenHardwareMonitor: {e}")
+        print(f"❌ Error al iniciar LibreHardwareMonitor: {e}")
 
 def get_cpu_temperature():
-    """ Obtiene la temperatura usando OpenHardwareMonitor (WMI) """
+    """ Obtiene la temperatura usando LibreHardwareMonitor (WMI) """
     try:
         import wmi
-        c = wmi.WMI(namespace="root\\OpenHardwareMonitor")
+        c = wmi.WMI(namespace="root\\LibreHardwareMonitor")
         for sensor in c.Sensor():
             if sensor.SensorType == u'Temperature' and 'CPU' in sensor.Name:
                 return round(sensor.Value, 1)
@@ -96,7 +96,7 @@ def send_data_to_server(data):
         print(f"❌ Error de conexión: {e}")
 
 if __name__ == "__main__":
-    lanzar_ohm()
+    lanzar_lhm()
     print("🔄 Iniciando monitoreo...")
 
     while True:
