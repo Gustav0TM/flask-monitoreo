@@ -5,6 +5,9 @@
 {% block contenido %}
 <header class="dashboard-header">
     AI Inversiones Palo Alto II - Sistema Predictivo de Fallas de Hardware
+    <div id="current-user-avatar-container">
+        <div id="user-avatar" class="user-avatar"></div>
+    </div>
 </header>
 
 <main class="dashboard-main">
@@ -21,7 +24,7 @@
                     <th>Disco (%)</th>
                     <th>Bytes Tx (MB)</th>
                     <th>Bytes Rx (MB)</th>
-                    <th>Temp CPU (°C)</th> <!-- Columna de temperatura -->
+                    <th>Temp CPU (°C)</th>
                     <th>Riesgo Calculado</th>
                 </tr>
             </thead>
@@ -40,7 +43,133 @@
     {% endif %}
 </main>
 
+<style>
+    /* Estilos existentes para tu dashboard */
+    .dashboard-header {
+        position: relative; /* Necesario para posicionar el avatar absolutamente dentro */
+        /* Otros estilos para tu header */
+        background-color: #333;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 1.5em;
+        display: flex; /* Para alinear el texto y el avatar */
+        justify-content: center; /* Centra el texto */
+        align-items: center; /* Centra verticalmente el contenido */
+    }
+
+    /* Contenedor del avatar para posicionamiento */
+    #current-user-avatar-container {
+        position: absolute; /* Posiciona el avatar de forma absoluta dentro del header */
+        right: 20px; /* Distancia desde la derecha del header */
+        top: 50%; /* Centrado verticalmente */
+        transform: translateY(-50%); /* Ajuste fino para centrado vertical */
+        display: flex; /* Para centrar el avatar si hubiera más de uno, aunque aquí es solo uno */
+    }
+
+    /* Estilos para el avatar circular */
+    .user-avatar {
+        width: 30px; /* Tamaño del avatar: pequeño */
+        height: 30px;
+        border-radius: 50%; /* Forma circular */
+        background-color: #28a745; /* Un color verde que indica "activo" */
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.8em; /* Tamaño de fuente para la inicial */
+        font-weight: bold;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Sombra suave */
+        transition: opacity 0.3s ease-in-out; /* Transición suave para aparecer/desaparecer */
+        opacity: 1; /* Por defecto visible */
+        margin-left: 5px; /* Espacio entre avatares si hubiera varios, o con el texto del header */
+        flex-shrink: 0; /* Evita que el avatar se encoja */
+    }
+
+    .user-avatar.hidden {
+        opacity: 0;
+        pointer-events: none; /* No interactuable cuando está oculto */
+    }
+
+    /* Otros estilos de tu dashboard (riesgos, tabla, etc.) */
+    .server-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+    }
+
+    .server-table th, .server-table td {
+        border: 1px solid #ddd;
+        padding: 0.8rem;
+        text-align: left;
+    }
+
+    .server-table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    .server-table tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .server-table tbody tr:hover {
+        background-color: #e9e9e9;
+    }
+
+    .risk-indicator {
+        display: inline-block;
+        padding: 0.3em 0.6em;
+        border-radius: 4px;
+        color: white;
+        font-size: 0.85em;
+        text-align: center;
+    }
+
+    .risk-low { background-color: #28a745; } /* Verde */
+    .risk-medium { background-color: #ffc107; color: #333; } /* Amarillo */
+    .risk-high { background-color: #dc3545; } /* Rojo */
+
+    .dispositivo-inactivo {
+        background-color: #f8d7da; /* Fondo rojo claro para inactivos */
+        color: #721c24; /* Texto rojo oscuro */
+        font-style: italic;
+    }
+</style>
+
 <script>
+// --- Lógica del Avatar de Usuario (Inicio) ---
+const userAvatar = document.getElementById('user-avatar');
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let userInitial;
+
+function getRandomInitial() {
+    return alphabet[Math.floor(Math.random() * alphabet.length)];
+}
+
+// Generar la inicial del avatar al cargar la página
+userInitial = getRandomInitial();
+userAvatar.textContent = userInitial;
+
+// Evento para detectar cuando el usuario cierra la pestaña o navega fuera
+window.addEventListener('beforeunload', function (e) {
+    userAvatar.classList.add('hidden');
+    // En este punto, el avatar se oculta visualmente para el usuario que sale.
+    // Para que otros usuarios "vieran" esta desconexión, se necesitaría un servidor.
+});
+
+// Opcional: Mostrar/ocultar el avatar cuando la pestaña se vuelve visible/oculta
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        userAvatar.classList.remove('hidden');
+    } else {
+        userAvatar.classList.add('hidden');
+    }
+});
+// --- Lógica del Avatar de Usuario (Fin) ---
+
+
+// --- TU CÓDIGO EXISTENTE PARA LA TABLA DE SERVIDORES (Inicio) ---
 // Formatea fecha y hora legible
 function formatDatetime(timestamp) {
     if (timestamp === null || timestamp === undefined) return "N/A";
@@ -137,5 +266,6 @@ function fetchServerData() {
 // Carga inicial y actualización automática cada 5s
 document.addEventListener('DOMContentLoaded', fetchServerData);
 setInterval(fetchServerData, 5000);
+// --- TU CÓDIGO EXISTENTE PARA LA TABLA DE SERVIDORES (Fin) ---
 </script>
 {% endblock %}
