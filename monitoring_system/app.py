@@ -9,7 +9,7 @@ app = Flask(__name__, template_folder='views', static_folder='views/layout')
 app.secret_key = "clave_supersecreta"
 
 # 🔽 ESTE PRINT ES PARA VERIFICAR EN RENDER
-print("🔥 Versión desplegada por Gianella - ACTIVA")
+print("🔥 Versión desplegada por Fabrizio - ACTIVA")
 
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(auth_bp)
