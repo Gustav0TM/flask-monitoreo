@@ -63,14 +63,14 @@ h1, h2 {
     border-radius: 8px;
     font-weight: 600;
     font-size: 1rem;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
 .boton-retroceso:hover {
     background-color: #6a1b9a;
-    transform: translate(80px, -25px);
-    position: absolute;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
     color: white;
     text-decoration: none;
 }
