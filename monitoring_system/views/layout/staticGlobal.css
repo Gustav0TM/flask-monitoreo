@@ -70,6 +70,7 @@ h1, h2 {
 .boton-retroceso:hover {
     background-color: #6a1b9a;
     transform: translate(80px, -25px);
+    position: absolute;
     color: white;
     text-decoration: none;
 }
