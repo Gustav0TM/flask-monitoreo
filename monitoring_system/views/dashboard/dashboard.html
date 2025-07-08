@@ -81,17 +81,6 @@ function fetchServerData() {
                 for (const [hostname, agentData] of dataArray) {
                     const row = tableBody.insertRow();
 
-                    // AGREGAR AQUÍ LA LÓGICA DE INACTIVIDAD
-                    const ahora = Math.floor(Date.now() / 1000);
-                    const ultimaActualizacion = agentData.timestamp || 0;
-                    const tiempoInactivo = ahora - ultimaActualizacion;
-                    const estaInactivo = tiempoInactivo > 60; // Más de 60 segundos = inactivo
-                    
-                    // Aplicar clase CSS si está inactivo
-                    if (estaInactivo) {
-                        row.classList.add('dispositivo-inactivo');
-                    }
-
                     row.insertCell().textContent = agentData.hostname || 'Desconocido';
                     row.insertCell().textContent = formatDatetime(agentData.timestamp);
                     row.insertCell().textContent = `${agentData.cpu_percent?.toFixed(1) || 'N/A'}%`;

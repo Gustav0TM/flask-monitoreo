@@ -1,6 +1,5 @@
 import datetime
 import time
-from monitoring_system.firebase_config import db_ref
 
 # Últimos datos de cada dispositivo
 latest_agent_data = {}
@@ -10,7 +9,11 @@ historial_agent_data = {}
 
 def save_agent_data(data):
     """
-    Guarda los datos recibidos del agente en Firebase.
+    Guarda los datos recibidos del agente, incluyendo:
+    - Uso de CPU, memoria, disco
+    - Particiones
+    - Red
+    - Temperatura de CPU (si se envía)
     """
     hostname = data.get("hostname")
     if not hostname:
@@ -19,32 +22,37 @@ def save_agent_data(data):
     timestamp = int(datetime.datetime.now().timestamp())
     data["timestamp"] = timestamp
 
-    # Guardar el último dato en la ruta /latest/{hostname}
-    db_ref.child('latest').child(hostname).set(data)
+    # Guardar último dato actualizado
+    latest_agent_data[hostname] = data
 
-    # Guardar en el historial en la ruta /history/{hostname}
-    historial_ref = db_ref.child('history').child(hostname).push(data)
-    data['firebase_key'] = historial_ref.key
+    # Inicializar historial si no existe
+    if hostname not in historial_agent_data:
+        historial_agent_data[hostname] = []
 
+    # Guardar copia en historial
+    historial_agent_data[hostname].append(data.copy())
+
+    # Limitar historial a 10 registros
+    if len(historial_agent_data[hostname]) > 10:
+        historial_agent_data[hostname].pop(0)
 
 def get_all_agent_data_sorted():
     """
-    Devuelve los dispositivos ordenados por último timestamp descendente desde Firebase.
+    Devuelve los dispositivos ordenados por último timestamp descendente.
     """
-    latest_data = db_ref.child('latest').get()
-    if latest_data:
-        return dict(sorted(
-            latest_data.items(),
+    return dict(
+        sorted(
+            latest_agent_data.items(),
             key=lambda item: item[1].get("timestamp", 0),
             reverse=True
-        ))
-    return {}
+        )
+    )
 
 def get_all_agent_data():
     """
-    Devuelve todos los dispositivos sin ordenar desde Firebase.
+    Devuelve todos los dispositivos sin ordenar.
     """
-    return db_ref.child('latest').get() or {}
+    return latest_agent_data
 
 def format_datetime(timestamp):
     """
@@ -56,14 +64,12 @@ def format_datetime(timestamp):
 
 def obtener_datos_historicos_por_host(hostname):
     """
-    Devuelve la lista de historial de un dispositivo específico desde Firebase.
+    Devuelve la lista de historial de un dispositivo específico.
     """
-    historial = db_ref.child('history').child(hostname).get()
-    return list(historial.values()) if historial else []
+    return historial_agent_data.get(hostname, [])
 
 def obtener_ultimo_dato(hostname):
     """
-    Devuelve el último dato registrado de un dispositivo desde Firebase.
+    Devuelve el último dato registrado de un dispositivo.
     """
-    latest = db_ref.child('latest').child(hostname).get()
-    return latest if latest else {}
+    return latest_agent_data.get(hostname)
