@@ -299,15 +299,16 @@ main.dashboard-main {
     text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 400px; /* Altura unificada para todos los cuadros */
+    align-items: center;
+    height: 400px;
 }
 
 /* Título de cada gráfico */
 .grafico-contenedor h3 {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5rem; /* Asegura un margen inferior consistente */
     color: var(--primary-color);
     font-family: var(--font-heading);
+    flex-shrink: 0; /* Evita que el título se encoja */
 }
 
 /* Gráficos lineales (CPU, Tx/Rx) */

@@ -81,12 +81,14 @@ function renderCharts(data) {
     if (txRxChartInstance) txRxChartInstance.destroy();
 
     // CPU
+    const promedioCpu = data.cpu.length > 0 ? (data.cpu.reduce((sum, val) => sum + val, 0) / data.cpu.length).toFixed(1) : 'N/A';
+
     cpuChartInstance = new Chart(document.getElementById('cpuChart'), {
         type: 'line',
         data: {
             labels,
             datasets: [{
-                label: 'CPU (%)',
+                label: `CPU (%) - Promedio: ${promedioCpu}%`, // Título de la leyenda con el promedio
                 data: data.cpu,
                 borderColor: '#00bcd4',
                 backgroundColor: '#00bcd4',
@@ -102,12 +104,18 @@ function renderCharts(data) {
                 x: { grid: { color: '#4a5568' } }
             },
             plugins: {
-                legend: { position: 'top' },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        padding: 20, // Ajusta este valor para bajar la leyenda del título del cuadro
+                        color: 'white' // Asegura que la leyenda sea blanca
+                    }
+                },
                 datalabels: {
                     anchor: 'end',
                     align: 'top',
                     offset: 4,
-                    color: 'black',
+                    color: 'black', // Color del texto de los datalabels
                     font: { size: 10, weight: 'normal' },
                     rotation: 0,
                     formatter: value => value.toFixed(1) + ' %'
@@ -128,11 +136,20 @@ function renderCharts(data) {
         options: {
             cutout: '70%',
             plugins: {
-                legend: { position: 'top' },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        padding: 20,
+                        color: 'white'
+                    }
+                },
                 datalabels: {
-                    color: 'white',
-                    font: { weight: 'normal', size: 12 },
-                    formatter: value => `${value.toFixed(1)}%`
+                    formatter: (value, ctx) => `${value.toFixed(1)}%`,
+                    color: function(ctx) {
+                        // Si el segmento es "Usado" (índice 0), el texto es negro, si es "Libre" (índice 1), es blanco.
+                        return ctx.dataIndex === 0 ? 'black' : 'white';
+                    },
+                    font: { weight: 'normal', size: 12 }
                 }
             }
         },
@@ -186,7 +203,7 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
                     formatter: (value, ctx) => {
                         const label = particionesLabels[ctx.dataIndex];
                         const usadoGb = particionesUsadoGb[label] || 0;
-                        return `${usadoGb} GB`;
+                        return `${usadoGb.toFixed(1)} GB`;
                     }
                 }
             },
@@ -211,18 +228,24 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
         ]
     },
     options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: { beginAtZero: true, suggestedMax: 100, ticks: { stepSize: 10 }, grid: { color: '#4a5568' } },
-            x: { grid: { color: '#4a5568' } }
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, suggestedMax: 100, ticks: { stepSize: 10 }, grid: { color: '#4a5568' } },
+                x: { grid: { color: '#4a5568' } }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        padding: 20, // Ajusta este valor para bajar la leyenda del título del cuadro
+                        color: 'white' // Asegura que la leyenda sea blanca
+                    }
+                }
+            }
         },
-        plugins: {
-            legend: { position: 'top' }
-        }
-    },
-    plugins: [ChartDataLabels]
-});
+        plugins: [ChartDataLabels]
+    });
 
 
 
@@ -270,7 +293,13 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
                 x: { grid: { color: '#4a5568' } }
             },
             plugins: {
-                legend: { position: 'top', labels: { padding: 20 } }
+                legend: {
+                    position: 'top',
+                    labels: {
+                        padding: 20,
+                        color: 'white'
+                    }
+                }
             }
         },
         plugins: [ChartDataLabels]
