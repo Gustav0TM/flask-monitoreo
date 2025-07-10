@@ -30,12 +30,14 @@
         {% endif %}
     </div>
 
-    {% if hardware_info.error %}
+    {# --- CORRECCIÓN AQUÍ: Mostrar mensaje de error si hardware_info tiene un error --- #}
+    {% if hardware_info and hardware_info.error %}
         <div class="error-message">
             <p><strong>Error al obtener detalles del hardware:</strong> {{ hardware_info.error }}</p>
             <p>Asegúrate de que el agente se está ejecutando con permisos de administrador en <strong>{{ hostname }}</strong> y ha enviado la información de hardware.</p>
         </div>
     {% else %}
+        {# --- Si no hay error, intentamos mostrar los datos --- #}
         <div class="cpu-z-layout">
             <div class="cpu-z-tab">
                 <h3>Procesador (CPU)</h3>
