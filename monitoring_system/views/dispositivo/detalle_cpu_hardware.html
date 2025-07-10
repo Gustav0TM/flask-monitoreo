@@ -5,19 +5,20 @@
 {% block body_class %}dashboard-body{% endblock %} 
 
 {% block contenido %}
-<div class="boton-retroceso-container">
-    <a href="{{ url_for('dispositivo.detalle_dispositivo', hostname=hostname) }}" class="boton-retroceso">
-        &larr; Volver al Detalle del Dispositivo
-    </a>
-</div>
-
 <header class="dashboard-header">
-    DETALLE AVANZADO DE HARDWARE - {{ hostname }}
+    <div class="header-content"> {# Contenedor para alinear el botón y el título #}
+        <div class="boton-retroceso-container-new"> {# Nuevo contenedor para el botón #}
+            <a href="{{ url_for('dispositivo.detalle_dispositivo', hostname=hostname) }}" class="boton-retroceso-new">
+                <span class="fecha-actual"></span> &larr; Volver
+            </a>
+        </div>
+        <h1 class="titulo-central-header">DETALLE AVANZADO DE HARDWARE - {{ hostname }}</h1> {# Título que se alinea con el botón #}
+    </div>
 </header>
 
 <main class="dashboard-main">
     <div class="titulo-con-riesgo">
-        <h1 class="titulo-central">{{ hostname }}</h1>
+        <h2 class="titulo-central">{{ hostname }}</h2> {# Este h2 es el del dispositivo en sí, no el de la cabecera #}
         {% if latest_data and latest_data.calculated_risk_percent is not none %}
             {% set risk_class = 'risk-low' if get_risk_status(latest_data.calculated_risk_percent) == 'Bajo' else 'risk-medium' if get_risk_status(latest_data.calculated_risk_percent) == 'Medio' else 'risk-high' %}
             <div class="indicador-riesgo {{ risk_class }}">
@@ -141,4 +142,14 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateElement = document.querySelector('.fecha-actual');
+        if (dateElement) {
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            dateElement.textContent = today.toLocaleDateString('es-ES', options);
+        }
+    });
+</script>
 {% endblock %}

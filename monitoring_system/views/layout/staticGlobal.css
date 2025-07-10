@@ -162,7 +162,29 @@ header.dashboard-header {
     font-family: var(--font-heading);
     letter-spacing: 2px;
     text-transform: uppercase;
+
+    /* Nuevos estilos para centrar y alinear elementos en el encabezado */
+    display: flex;
+    flex-direction: column; /* Cambiado a columna para el botón arriba del título */
+    align-items: center; /* Centra horizontalmente el contenido */
+    justify-content: center;
 }
+
+/* Contenido del encabezado, para alinear botón y título */
+.header-content {
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+    display: flex;
+    flex-direction: column; /* Contenido también en columna */
+    align-items: center; /* Centra el contenido */
+    gap: 10px; /* Espacio entre el botón y el título */
+}
+
+/* Estilo para el título en el encabezado */
+.titulo-central-header {
+    margin: 0; /* Elimina márgenes por defecto del h1 */
+    font-size: 1.8rem; /* Ajusta el tamaño si es necesario */
+}
+
 
 /* Contenedor principal del dashboard */
 main.dashboard-main {
@@ -346,7 +368,8 @@ main.dashboard-main {
     min-width: 200px;
 }
 
-/* ================== Botón de Retroceso ================== */
+/* ================== Botón de Retroceso (general) ================== */
+/* Mantengo el estilo existente para el botón "Listado de Servidores" */
 .boton-retroceso-container {
     padding: 1rem 2rem;
     text-align: left;
@@ -373,6 +396,42 @@ main.dashboard-main {
     text-decoration: none;
 }
 
+/* ================== NUEVO Botón de Retroceso para detalle_cpu_hardware ================== */
+.boton-retroceso-container-new {
+    width: 100%; /* Ocupa todo el ancho del header-content */
+    text-align: left; /* Alinea el botón a la izquierda */
+    padding-bottom: 10px; /* Espacio debajo del botón */
+}
+
+.boton-retroceso-new {
+    display: inline-flex; /* Permite alinear el ícono y el texto */
+    align-items: center;
+    gap: 8px; /* Espacio entre fecha/texto y la flecha */
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.boton-retroceso-new:hover {
+    background-color: #6a1b9a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.fecha-actual {
+    font-size: 0.9em; /* Ajusta el tamaño de la fecha si es necesario */
+    opacity: 0.8; /* Hace la fecha un poco más sutil */
+}
+
+
 /* Botones de detalle en cada gráfico */
 .boton-detalle-grafico {
     background-color: var(--secondary-color);
@@ -395,4 +454,23 @@ main.dashboard-main {
     background-color: #6a1b9a;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Estilo para mensajes de error, si los tienes */
+.error-message {
+    background-color: rgba(255, 82, 82, 0.2);
+    border: 1px solid var(--danger-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    color: var(--text-color);
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.error-message p {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+.error-message strong {
+    color: var(--danger-color);
 }
