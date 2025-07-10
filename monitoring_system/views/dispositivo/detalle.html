@@ -213,8 +213,9 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
                 datalabels: {
                     color: 'white',
                     font: { size: 10, weight: 'bold' },
-                    anchor: 'end',
-                    align: 'end',
+                    anchor: 'center',
+                    align: 'center',
+                    offset: 0,
                     formatter: (value, ctx) => {
                         const label = particionesLabels[ctx.dataIndex];
                         const usadoGb = particionesUsadoGb[label] || 0;
@@ -229,8 +230,9 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
                 datalabels: {
                     color: 'white',
                     font: { size: 10, weight: 'bold' },
-                    anchor: 'end',
-                    align: 'end',
+                    anchor: 'center',
+                    align: 'center',
+                    offset: 0,
                     formatter: (value, ctx) => {
                         const label = particionesLabels[ctx.dataIndex];
                         const totalGb = particionesTotalGb[label] || 0;
@@ -246,8 +248,14 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, suggestedMax: 100, ticks: { stepSize: 10 }, grid: { color: '#4a5568' }, stacked: true },
-                x: { grid: { color: '#4a5568' }, stacked: true }
+                y: { beginAtZero: true, suggestedMax: 100, ticks: { stepSize: 10 }, grid: { color: '#4a5568' }, stacked: true,
+                     // Añadir color de fuente para el eje Y
+                     ticks: { color: 'white' }
+                },
+                x: { grid: { color: '#4a5568' }, stacked: true,
+                     // Añadir color de fuente para el eje X
+                     ticks: { color: 'white' }
+                }
             },
             plugins: {
                 legend: {
@@ -261,7 +269,6 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
         },
         plugins: [ChartDataLabels]
     });
-
 
 
     // Tx/Rx

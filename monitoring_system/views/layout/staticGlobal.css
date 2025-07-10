@@ -179,6 +179,15 @@ header.dashboard-header {
     gap: 10px; /* Espacio entre el botón y el título */
 }
 
+.header-content-detalle {
+    width: 100%; /* Ocupa todo el ancho disponible */
+    display: flex; /* Habilita Flexbox */
+    align-items: center; /* Alinea verticalmente los ítems al centro */
+    justify-content: space-between; /* Distribuye el espacio entre los ítems (botón y título) */
+    padding: 0 2rem; /* Añade un poco de padding horizontal para que no pegue a los bordes */
+    box-sizing: border-box; /* Asegura que el padding no aumente el ancho total */
+}
+
 /* Estilo para el título en el encabezado */
 .titulo-central-header {
     margin: 0; /* Elimina márgenes por defecto del h1 */
@@ -425,12 +434,6 @@ main.dashboard-main {
     color: white;
     text-decoration: none;
 }
-
-.fecha-actual {
-    font-size: 0.9em; /* Ajusta el tamaño de la fecha si es necesario */
-    opacity: 0.8; /* Hace la fecha un poco más sutil */
-}
-
 
 /* Botones de detalle en cada gráfico */
 .boton-detalle-grafico {

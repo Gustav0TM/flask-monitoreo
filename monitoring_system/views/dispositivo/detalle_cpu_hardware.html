@@ -6,31 +6,15 @@
 
 {% block contenido %}
 <header class="dashboard-header">
-    <div class="header-content"> {# Contenedor para alinear el botón y el título #}
-        <div class="boton-retroceso-container-new"> {# Nuevo contenedor para el botón #}
-            <a href="{{ url_for('dispositivo.detalle_dispositivo', hostname=hostname) }}" class="boton-retroceso-new">
-                <span class="fecha-actual"></span> &larr; Volver
-            </a>
-        </div>
-        <h1 class="titulo-central-header">DETALLE AVANZADO DE HARDWARE - {{ hostname }}</h1> {# Título que se alinea con el botón #}
+    <div class="header-content-detalle">
+        <a href="{{ url_for('dispositivo.detalle_dispositivo', hostname=hostname) }}" class="boton-retroceso-new">
+            &larr; Volver
+        </a>
+        <h1 class="titulo-central-header">DETALLE AVANZADO DE HARDWARE - {{ hostname }}</h1>
     </div>
 </header>
 
 <main class="dashboard-main">
-    <div class="titulo-con-riesgo">
-        <h2 class="titulo-central">{{ hostname }}</h2> {# Este h2 es el del dispositivo en sí, no el de la cabecera #}
-        {% if latest_data and latest_data.calculated_risk_percent is not none %}
-            {% set risk_class = 'risk-low' if get_risk_status(latest_data.calculated_risk_percent) == 'Bajo' else 'risk-medium' if get_risk_status(latest_data.calculated_risk_percent) == 'Medio' else 'risk-high' %}
-            <div class="indicador-riesgo {{ risk_class }}">
-                Riesgo Actual: {{ get_risk_status(latest_data.calculated_risk_percent) }} ({{ latest_data.calculated_risk_percent }}%)
-            </div>
-        {% else %}
-            <div class="indicador-riesgo risk-na">
-                Riesgo Actual: N/A
-            </div>
-        {% endif %}
-    </div>
-
     {% if hardware_info.error %}
         <div class="error-message">
             <p><strong>Error al obtener detalles del hardware:</strong> {{ hardware_info.error }}</p>
@@ -139,17 +123,4 @@
         </div>
     {% endif %}
 </main>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const dateElement = document.querySelector('.fecha-actual');
-        if (dateElement) {
-            const today = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            dateElement.textContent = today.toLocaleDateString('es-ES', options);
-        }
-    });
-</script>
 {% endblock %}
