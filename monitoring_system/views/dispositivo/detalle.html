@@ -19,11 +19,11 @@
     <div class="contenedor-graficos">
         
         <div class="grafico-contenedor lineal">
-            <h3>Uso de CPU</h3>
+            <h3>CPU (%)</h3>
             <canvas id="cpuChart"></canvas>
-            <a href="{{ url_for('dispositivo.detalle_hardware_cpu', hostname=hostname) }}" class="boton-detalle-grafico">
-                Detalle CPU
-            </a>
+            <button class="boton-detalle-grafico" onclick="irDetalleCPU('{{ hostname }}')">
+                Detalle
+            </button>
         </div>
 
         <div class="grafico-contenedor circular">
@@ -348,6 +348,5 @@ function calcularStepSize(tx, rx) {
     if (maxValor <= 1000) return 100;
     return Math.ceil(maxValor / 10);
 }
-
 </script>
 {% endblock %}

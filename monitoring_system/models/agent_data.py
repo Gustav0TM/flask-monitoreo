@@ -1,5 +1,3 @@
-# monitoring_system/models/agent_data.py
-
 import datetime
 import time
 
@@ -9,9 +7,6 @@ latest_agent_data = {}
 # Historial real de los últimos 10 registros por dispositivo
 historial_agent_data = {}
 
-# Nueva variable para almacenar la información de hardware estática por agente
-hardware_info_by_agent = {}
-
 def save_agent_data(data):
     """
     Guarda los datos recibidos del agente, incluyendo:
@@ -19,7 +14,6 @@ def save_agent_data(data):
     - Particiones
     - Red
     - Temperatura de CPU (si se envía)
-    - Información detallada de hardware (si se envía por primera vez)
     """
     hostname = data.get("hostname")
     if not hostname:
@@ -28,23 +22,15 @@ def save_agent_data(data):
     timestamp = int(datetime.datetime.now().timestamp())
     data["timestamp"] = timestamp
 
-    # --- Manejar la información detallada de hardware ---
-    data_to_save = data.copy() # Copia para modificar sin alterar el 'data' original
-    if 'hardware_info' in data_to_save:
-        # Almacenar la hardware_info por separado
-        hardware_info_by_agent[hostname] = data_to_save['hardware_info']
-        del data_to_save['hardware_info'] # Eliminarla de los datos que se guardan repetidamente
-    # --- Fin de la nueva parte ---
-
-    # Guardar último dato actualizado (sin la info de hardware estática)
-    latest_agent_data[hostname] = data_to_save
+    # Guardar último dato actualizado
+    latest_agent_data[hostname] = data
 
     # Inicializar historial si no existe
     if hostname not in historial_agent_data:
         historial_agent_data[hostname] = []
 
-    # Guardar copia en historial (también sin la info de hardware estática)
-    historial_agent_data[hostname].append(data_to_save.copy())
+    # Guardar copia en historial
+    historial_agent_data[hostname].append(data.copy())
 
     # Limitar historial a 10 registros
     if len(historial_agent_data[hostname]) > 10:
@@ -87,24 +73,3 @@ def obtener_ultimo_dato(hostname):
     Devuelve el último dato registrado de un dispositivo.
     """
     return latest_agent_data.get(hostname)
-
-def get_detailed_hardware_info(hostname):
-    """
-    Devuelve la información de hardware estática para un hostname específico.
-    Si no existe, devuelve un diccionario con un mensaje de error.
-    """
-    info = hardware_info_by_agent.get(hostname)
-    if info is None:
-        return {"error": "Información detallada de hardware no disponible para este host. Asegúrate de que el agente esté ejecutándose como administrador y haya enviado los datos."}
-    return info
-
-def get_risk_status(risk_percent):
-    """Determina el estado de riesgo basado en un porcentaje."""
-    if risk_percent is None:
-        return "N/A"
-    elif risk_percent >= 80:
-        return "Alto"
-    elif risk_percent >= 50:
-        return "Medio"
-    else:
-        return "Bajo"
