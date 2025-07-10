@@ -1,19 +1,20 @@
-from functools import wraps
+# monitoring_system/controllers/dispositivo_controller.py
+
 from flask import Blueprint, render_template, jsonify, session, redirect, url_for
-# Importamos la nueva función get_detailed_hardware_info y otras que necesitarás
 from monitoring_system.models.agent_data import (
     obtener_datos_historicos_por_host,
     latest_agent_data,
-    get_detailed_hardware_info, # Nuevo
-    get_risk_status # Nuevo, si lo usas para mostrar riesgo en la página de detalle
+    get_detailed_hardware_info,
+    get_risk_status # Asegúrate de que esta función está importada
 )
-import time # Para formatear timestamps si es necesario
+import time # Para formatear timestamps en la respuesta JSON
+from functools import wraps # Necesario si usas login_required
 
 dispositivo_bp = Blueprint('dispositivo', __name__)
 
-# Función de verificación de sesión (la misma que ya tienes)
+# Decorador de autenticación
 def login_required(f):
-    @wraps(f) # Importa functools.wraps si no lo has hecho
+    @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'usuario' not in session:
             return redirect(url_for('auth.login'))
@@ -22,16 +23,13 @@ def login_required(f):
 
 # Tu ruta existente para el detalle general del dispositivo
 @dispositivo_bp.route('/dispositivo/<hostname>')
+@login_required # <-- Aplicar el decorador aquí si quieres proteger esta ruta
 def detalle_dispositivo(hostname):
-    # Asegúrate de que esta ruta use el decorador de login_required si quieres protegerla
-    # @login_required # <-- Descomentar si aplica
     return render_template('dispositivo/detalle.html', hostname=hostname)
 
-# Tu ruta existente para obtener los datos JSON del dispositivo
 @dispositivo_bp.route('/get_device_data/<hostname>')
+@login_required # <-- Aplicar el decorador aquí si quieres proteger esta ruta
 def get_device_data(hostname):
-    # Asegúrate de que esta ruta use el decorador de login_required si quieres protegerla
-    # @login_required # <-- Descomentar si aplica
     historial = obtener_datos_historicos_por_host(hostname)
 
     riesgo = None
@@ -40,42 +38,37 @@ def get_device_data(hostname):
 
     ultimo = latest_agent_data.get(hostname, {})
     
-    # Formatear timestamps para ser legibles en el frontend
-    formatted_timestamps = [time.strftime('%H:%M:%S', time.localtime(ts)) for ts in [d['timestamp'] for d in historial]]
-
+    # --- CORRECCIÓN "Invalid Date": Formatear timestamps a milisegundos para Chart.js ---
+    # Chart.js con tipo 'time' prefiere milisegundos desde la época
+    # O, si usas 'category' en el eje X, puedes enviar cadenas de fecha
+    # Usaremos milisegundos para ser más robustos con 'time' scale.
+    timestamps_ms = [int(d['timestamp'] * 1000) for d in historial]
 
     respuesta = {
-        "timestamps": formatted_timestamps, # Usar los formateados
-        "cpu": [d['cpu_percent'] for d in historial],
-        "memory": [d['memory_percent'] for d in historial],
-        "disk": [d['disk_percent'] for d in historial],
-        "tx": [d['bytes_sent_mb'] for d in historial],
-        "rx": [d['bytes_recv_mb'] for d in historial],
+        "timestamps": timestamps_ms, # Corregido: Enviar milisegundos
+        "cpu": [d.get('cpu_percent', 0) for d in historial], # Usar .get para evitar KeyError si falta
+        "memory": [d.get('memory_percent', 0) for d in historial],
+        "disk": [d.get('disk_percent', 0) for d in historial],
+        "tx": [d.get('bytes_sent_mb', 0) for d in historial],
+        "rx": [d.get('bytes_recv_mb', 0) for d in historial],
+        # --- CORRECCIÓN Temperatura CPU: Incluir temperatura aquí ---
+        "cpu_temperature": ultimo.get("cpu_temperature", "N/A"), # Asegúrate de pasar la temperatura
         "disks": ultimo.get("disks", {}),
         "disks_used_gb": ultimo.get("disks_used_gb", {}),
         "disks_total_gb": ultimo.get("disks_total_gb", {}),
-        "cpu_temperature": ultimo.get("cpu_temperature", "N/A"), # Asegúrate de pasar la temperatura
         "riesgo": riesgo
     }
     return jsonify(respuesta)
 
-# --- NUEVA RUTA Y FUNCIÓN PARA EL DETALLE AVANZADO DE CPU/HARDWARE ---
+# NUEVA RUTA Y FUNCIÓN PARA EL DETALLE AVANZADO DE CPU/HARDWARE
 @dispositivo_bp.route('/dispositivo/<hostname>/detalle_hardware_cpu')
-# Puedes añadir el decorador de autenticación si quieres que solo usuarios logueados accedan
-# @login_required 
+@login_required # <-- Aplicar el decorador aquí si quieres proteger esta ruta
 def detalle_hardware_cpu(hostname):
     hardware_info = get_detailed_hardware_info(hostname)
     latest_data = latest_agent_data.get(hostname) # Para mostrar hostname y riesgo actual
 
-    if not hardware_info:
-        # Si no hay información de hardware, muestra un mensaje de error
-        # o redirige a la página principal de detalle con un flash message.
-        # Aquí, simplemente retornamos un template de error o un mensaje.
-        return render_template(
-            'dispositivo/detalle_cpu_hardware.html', # Usamos la misma plantilla
-            hostname=hostname,
-            hardware_info={"error": "Información detallada de hardware no disponible. Asegúrate de que el agente esté ejecutándose como administrador y haya enviado los datos."}
-        )
+    # La función get_detailed_hardware_info ya devuelve un diccionario con "error"
+    # si no encuentra la info, así que solo pasamos el resultado a la plantilla.
 
     return render_template(
         'dispositivo/detalle_cpu_hardware.html',

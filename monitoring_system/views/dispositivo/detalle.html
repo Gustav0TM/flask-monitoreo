@@ -24,9 +24,6 @@
             <a href="{{ url_for('dispositivo.detalle_hardware_cpu', hostname=hostname) }}" class="boton-detalle-grafico">
                 Detalle CPU
             </a>
-            <div class="info-particiones">
-                <div class="info-particion-item">Temperatura CPU: <span id="cpu_temp_display">N/A</span>°C</div>
-            </div>
         </div>
 
         <div class="grafico-contenedor circular">
@@ -351,5 +348,6 @@ function calcularStepSize(tx, rx) {
     if (maxValor <= 1000) return 100;
     return Math.ceil(maxValor / 10);
 }
+
 </script>
 {% endblock %}
