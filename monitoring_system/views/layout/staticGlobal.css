@@ -180,18 +180,23 @@ header.dashboard-header {
 }
 
 .header-content-detalle {
-    width: 100%; /* Ocupa todo el ancho disponible */
-    display: flex; /* Habilita Flexbox */
-    align-items: center; /* Alinea verticalmente los ítems al centro */
-    justify-content: space-between; /* Distribuye el espacio entre los ítems (botón y título) */
-    padding: 0 2rem; /* Añade un poco de padding horizontal para que no pegue a los bordes */
-    box-sizing: border-box; /* Asegura que el padding no aumente el ancho total */
+    width: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 0 2rem;
+    box-sizing: border-box;
+    justify-content: flex-start;
 }
 
 /* Estilo para el título en el encabezado */
 .titulo-central-header {
-    margin: 0; /* Elimina márgenes por defecto del h1 */
-    font-size: 1.8rem; /* Ajusta el tamaño si es necesario */
+    margin: 0;
+    font-size: 1.8rem;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
 }
 
 
