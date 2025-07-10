@@ -19,11 +19,14 @@
     <div class="contenedor-graficos">
         
         <div class="grafico-contenedor lineal">
-            <h3>CPU (%)</h3>
+            <h3>Uso de CPU</h3>
             <canvas id="cpuChart"></canvas>
-            <button class="boton-detalle-grafico" onclick="irDetalleCPU('{{ hostname }}')">
-                Detalle
-            </button>
+            <a href="{{ url_for('dispositivo.detalle_hardware_cpu', hostname=hostname) }}" class="boton-detalle-grafico">
+                Detalle CPU
+            </a>
+            <div class="info-particiones">
+                <div class="info-particion-item">Temperatura CPU: <span id="cpu_temp_display">N/A</span>°C</div>
+            </div>
         </div>
 
         <div class="grafico-contenedor circular">
