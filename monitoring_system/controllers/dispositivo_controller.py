@@ -28,35 +28,36 @@ def detalle_dispositivo(hostname):
     # Obtener los datos históricos del agente para los gráficos
     historial = obtener_datos_historicos_por_host(hostname)
 
-    # Obtener el riesgo y otros datos del 'latest_agent_data' para los gráficos
+    # Obtener el riesgo y otros datos del 'latest_agent_data'
     riesgo = None
     if hostname in latest_agent_data:
         riesgo = latest_agent_data[hostname].get("calculated_risk_percent")
 
-    ultimo = latest_agent_data.get(hostname, {})
+    # Formatear timestamps para ser legibles en el frontend (esto es para la primera carga si detalle.html los usara directamente)
+    # Sin embargo, get_device_data se encarga de los timestamps para Chart.js.
+    # Esta línea se mantiene para consistencia si el template los usara sin JS.
+    formatted_timestamps = [time.strftime('%H:%M:%S', time.localtime(d['timestamp'])) for d in historial]
 
-     # Formatear timestamps a milisegundos para Chart.js con tipo 'time'
-    timestamps_ms = [int(d['timestamp'] * 1000) for d in historial]
-
-    respuesta = {
-        "timestamps": timestamps_ms, # Usar milisegundos
-        "cpu": [d.get('cpu_percent', 0) for d in historial], # Añadido .get con default 0 para seguridad
-        "memory": [d.get('memory_percent', 0) for d in historial], # Añadido .get con default 0 para seguridad
-        # El resto de tus listas de datos de gráficos
-        "disk": [d.get('disk_percent', 0) for d in historial],
-        "tx": [d.get('bytes_sent_mb', 0) for d in historial],
-        "rx": [d.get('bytes_recv_mb', 0) for d in historial],
-        "disks": ultimo.get("disks", {}),
-        "disks_used_gb": ultimo.get("disks_used_gb", {}),
-        "disks_total_gb": ultimo.get("disks_total_gb", {}),
-        "cpu_temperature": ultimo.get("cpu_temperature", "N/A"),
-        "riesgo": riesgo
-    }
-    return jsonify(respuesta)
+    # Renderizar la plantilla detalle.html y pasar los datos
+    return render_template(
+        'dispositivo/detalle.html',
+        hostname=hostname,
+        # Estos datos se usan para la carga inicial de los gráficos si no se usa AJAX de inmediato
+        timestamps=formatted_timestamps, # Mantener por si se usa en el HTML directamente
+        cpu=[d['cpu_percent'] for d in historial],
+        memory=[d['memory_percent'] for d in historial],
+        disks=[d['disk_percent'] for d in historial],
+        tx=[d['bytes_sent_mb'] for d in historial],
+        rx=[d['bytes_recv_mb'] for d in historial],
+        disks_total_gb=latest_agent_data.get(hostname, {}).get("disks_total_gb", {}),
+        disks_used_gb=latest_agent_data.get(hostname, {}).get("disks_used_gb", {}),
+        cpu_temperature=latest_agent_data.get(hostname, {}).get("cpu_temperature", "N/A"),
+        riesgo=riesgo
+    )
 
 # Ruta para obtener los datos JSON del dispositivo (para actualización de gráficos vía AJAX)
 @dispositivo_bp.route('/get_device_data/<hostname>')
-@login_required # Proteger esta API también
+@login_required
 def get_device_data(hostname):
     historial = obtener_datos_historicos_por_host(hostname)
 
@@ -66,13 +67,13 @@ def get_device_data(hostname):
 
     ultimo = latest_agent_data.get(hostname, {})
     
-    # CAMBIO AQUÍ: Convertir timestamps a milisegundos para Chart.js con tipo 'time'
+    # *** ESTE ES EL CAMBIO CLAVE PARA LOS TIMESTAMPS DE CHART.JS ***
+    # Convertir timestamps a milisegundos para Chart.js con tipo 'time'
     timestamps_ms = [int(d['timestamp'] * 1000) for d in historial]
 
-
     respuesta = {
-        "timestamps": timestamps_ms, # Usar los timestamps en milisegundos
-        "cpu": [d.get('cpu_percent', 0) for d in historial], # Usar .get con valor por defecto es buena práctica
+        "timestamps": timestamps_ms, # Usar milisegundos para Chart.js
+        "cpu": [d.get('cpu_percent', 0) for d in historial],
         "memory": [d.get('memory_percent', 0) for d in historial],
         "disk": [d.get('disk_percent', 0) for d in historial],
         "tx": [d.get('bytes_sent_mb', 0) for d in historial],
@@ -85,84 +86,31 @@ def get_device_data(hostname):
     }
     return jsonify(respuesta)
 
-# --- RUTAS ESPECÍFICAS PARA EL DETALLE AVANZADO DE HARDWARE (usando detalle_cpu_hardware.html) ---
+# --- RUTA ÚNICA Y GENERAL PARA EL DETALLE AVANZADO DE HARDWARE ---
+# Esta ruta cargará toda la información de hardware y la pasará a la plantilla.
+# La plantilla decidirá qué mostrar basándose en la información recibida.
+@dispositivo_bp.route('/dispositivo/<hostname>/detalle_hardware') # Cambiado a una ruta más genérica
+@login_required 
+def detalle_hardware_completo(hostname): # Nombre de función más descriptivo
+    hardware_info = get_detailed_hardware_info(hostname)
+    latest_data = latest_agent_data.get(hostname) # Para mostrar hostname y riesgo actual
 
-# Ruta para el detalle de CPU
-@dispositivo_bp.route('/dispositivo/<hostname>/detalle_hardware_cpu')
-@login_required
-def detalle_hardware_cpu(hostname):
-    full_hardware_info = get_detailed_hardware_info(hostname)
-    
-    # Prepara solo la información del procesador y caché para esta vista
-    hardware_to_display = {
-        "Processor": full_hardware_info.get("Processor", {}),
-    }
+    if not hardware_info or ("error" in hardware_info and hardware_info["error"]):
+        # Si no hay información de hardware, muestra un mensaje de error
+        return render_template(
+            'dispositivo/detalle_cpu_hardware.html', # Usamos la misma plantilla
+            hostname=hostname,
+            hardware_info={"error": hardware_info.get("error", "Información detallada de hardware no disponible. Asegúrate de que el agente esté ejecutándose como administrador y haya enviado los datos.")},
+            latest_data=latest_data,
+            get_risk_status=get_risk_status,
+            section_title="HARDWARE COMPLETO" # Título genérico para el error
+        )
 
     return render_template(
         'dispositivo/detalle_cpu_hardware.html',
         hostname=hostname,
-        hardware_info=hardware_to_display, 
-        latest_data=latest_agent_data.get(hostname), 
+        hardware_info=hardware_info, # PASAMOS TODA LA INFO DE HARDWARE
+        latest_data=latest_data, 
         get_risk_status=get_risk_status,
-        section_title="PROCESADOR (CPU)" # Título específico para esta sección
-    )
-
-# Ruta para el detalle de Memoria
-@dispositivo_bp.route('/dispositivo/<hostname>/detalle_hardware_memory')
-@login_required
-def detalle_hardware_memory(hostname):
-    full_hardware_info = get_detailed_hardware_info(hostname)
-    
-    # Prepara solo la información de la memoria para esta vista
-    hardware_to_display = {
-        "Memory": full_hardware_info.get("Memory", {}),
-    }
-
-    return render_template(
-        'dispositivo/detalle_cpu_hardware.html', # Reutilizamos la plantilla
-        hostname=hostname,
-        hardware_info=hardware_to_display, # Pasamos solo la sección de Memoria
-        latest_data=latest_agent_data.get(hostname),
-        get_risk_status=get_risk_status,
-        section_title="MEMORIA" # Título específico para esta sección
-    )
-
-# Ruta para el detalle de Disco
-@dispositivo_bp.route('/dispositivo/<hostname>/detalle_hardware_disk')
-@login_required
-def detalle_hardware_disk(hostname):
-    full_hardware_info = get_detailed_hardware_info(hostname)
-    
-    # Prepara solo la información de los discos para esta vista
-    hardware_to_display = {
-        "Disks": full_hardware_info.get("Disks", []),
-    }
-
-    return render_template(
-        'dispositivo/detalle_cpu_hardware.html', # Reutilizamos la plantilla
-        hostname=hostname,
-        hardware_info=hardware_to_display, # Pasamos solo la sección de Discos
-        latest_data=latest_agent_data.get(hostname),
-        get_risk_status=get_risk_status,
-        section_title="ALMACENAMIENTO (DISCOS)" # Título específico para esta sección
-    )
-
-# Ruta para el detalle de Gráficos (GPU)
-@dispositivo_bp.route('/dispositivo/<hostname>/detalle_hardware_gpu')
-@login_required
-def detalle_hardware_gpu(hostname):
-    full_hardware_info = get_detailed_hardware_info(hostname)
-    
-    # Prepara solo la información de las tarjetas gráficas para esta vista
-    hardware_to_display = {
-        "Graphics": full_hardware_info.get("Graphics", []),
-    }
-
-    return render_template(
-        'dispositivo/detalle_cpu_hardware.html', # Reutilizamos la plantilla
-        hostname=hostname,
-        hardware_info=hardware_to_display, # Pasamos solo la sección de Gráficos
-        latest_data=latest_agent_data.get(hostname),
-        get_risk_status=get_risk_status,
-        section_title="GRÁFICOS (GPU)" # Título específico para esta sección
+        section_title="HARDWARE COMPLETO" # Título genérico para la vista
     )

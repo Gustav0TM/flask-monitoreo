@@ -21,32 +21,36 @@
         <div class="grafico-contenedor lineal">
             <h3>Uso de CPU</h3>
             <canvas id="cpuChart"></canvas>
-            <a href="{{ url_for('dispositivo.detalle_hardware_cpu', hostname=hostname) }}" class="boton-detalle-grafico">
-                Detalle CPU
+            {# CAMBIO AQUÍ: La URL del botón de detalle ahora apunta a la ruta genérica #}
+            <a href="{{ url_for('dispositivo.detalle_hardware_completo', hostname=hostname) }}" class="boton-detalle-grafico">
+                Detalle Hardware
             </a>
         </div>
 
         <div class="grafico-contenedor circular">
             <h3>Memoria (%)</h3>
             <canvas id="memoryChart"></canvas>
-            <a href="{{ url_for('dispositivo.detalle_hardware_memory', hostname=hostname) }}" class="boton-detalle-grafico">
-                Detalle Memoria
+            {# CAMBIO AQUÍ: La URL del botón de detalle ahora apunta a la ruta genérica #}
+            <a href="{{ url_for('dispositivo.detalle_hardware_completo', hostname=hostname) }}" class="boton-detalle-grafico">
+                Detalle Hardware
             </a>
         </div>
 
         <div class="grafico-contenedor circular">
             <h3>Disco (%) - Particiones</h3>
             <canvas id="diskChart"></canvas>
-            <a href="{{ url_for('dispositivo.detalle_hardware_disk', hostname=hostname) }}" class="boton-detalle-grafico">
-                Detalle Disco
+            {# CAMBIO AQUÍ: La URL del botón de detalle ahora apunta a la ruta genérica #}
+            <a href="{{ url_for('dispositivo.detalle_hardware_completo', hostname=hostname) }}" class="boton-detalle-grafico">
+                Detalle Hardware
             </a>
         </div>
 
         <div class="grafico-contenedor lineal">
             <h3>Bytes Tx / Rx (MB)</h3>
             <canvas id="txRxChart"></canvas>
-            <a href="{{ url_for('dispositivo.detalle_hardware_gpu', hostname=hostname) }}" class="boton-detalle-grafico">
-                Detalle GPU
+            {# CAMBIO AQUÍ: La URL del botón de detalle ahora apunta a la ruta genérica #}
+            <a href="{{ url_for('dispositivo.detalle_hardware_completo', hostname=hostname) }}" class="boton-detalle-grafico">
+                Detalle Hardware
             </a>
         </div>
 
@@ -57,6 +61,9 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+{# Importa el adaptador de fecha de Chart.js si aún no lo tienes. Este es crucial. #}
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
 
 <script>
 let cpuChartInstance = null;
@@ -74,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderCharts(data);
                 mostrarRiesgo(data);
             })
-            .catch(err => console.error('Error:', err));
+            .catch(err => console.error('Error al obtener datos del dispositivo:', err));
     }
 
     actualizarDetalle();
@@ -82,14 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function renderCharts(data) {
-    const labels = data.timestamps.map(ts => {
-        // Asumiendo que ts ya es un string de tiempo formateado, no un timestamp UNIX.
-        // Si 'timestamps' en 'data' son strings como "HH:MM:SS", esto no necesita cambio.
-        // Si 'timestamps' aún son UNIX timestamps, necesitas convertir de nuevo:
-        // const date = new Date(ts * 1000);
-        // return date.toLocaleTimeString();
-        return ts; // Si ya vienen formateados
-    });
+    // Los 'labels' para Chart.js de tipo 'time' deben ser directamente los timestamps en milisegundos.
+    // Chart.js se encargará de formatearlos en el eje X.
+    const labels = data.timestamps; // Ya son milisegundos desde el backend
 
     if (cpuChartInstance) cpuChartInstance.destroy();
     if (memoryChartInstance) memoryChartInstance.destroy();
@@ -116,8 +118,24 @@ function renderCharts(data) {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, suggestedMax: 100, ticks: { stepSize: 10 }, grid: { color: '#4a5568' }, fontColor: 'white' }, // Añadir fontColor
-                x: { grid: { color: '#4a5568' }, fontColor: 'white' } // Añadir fontColor
+                y: { beginAtZero: true, suggestedMax: 100, ticks: { stepSize: 10, color: 'white' }, grid: { color: '#4a5568' } },
+                x: { 
+                    type: 'time', // Establecer el tipo de escala a 'time'
+                    time: {
+                        unit: 'second', // Muestra segundos por defecto, si es muy denso, cambia a 'minute'
+                        displayFormats: {
+                            second: 'HH:mm:ss', // Formato para segundos
+                            minute: 'HH:mm'
+                        },
+                        tooltipFormat: 'HH:mm:ss' // Formato para tooltips
+                    },
+                    grid: { color: '#4a5568' }, 
+                    ticks: { 
+                        color: 'white',
+                        maxRotation: 45, // Rotación de las etiquetas para evitar superposición
+                        minRotation: 45 
+                    }
+                }
             },
             plugins: {
                 legend: {
@@ -248,14 +266,8 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, suggestedMax: 100, ticks: { stepSize: 10 }, grid: { color: '#4a5568' }, stacked: true,
-                     // Añadir color de fuente para el eje Y
-                     ticks: { color: 'white' }
-                },
-                x: { grid: { color: '#4a5568' }, stacked: true,
-                     // Añadir color de fuente para el eje X
-                     ticks: { color: 'white' }
-                }
+                y: { beginAtZero: true, suggestedMax: 100, ticks: { stepSize: 10, color: 'white' }, grid: { color: '#4a5568' }, stacked: true },
+                x: { grid: { color: '#4a5568' }, stacked: true, ticks: { color: 'white' } }
             },
             plugins: {
                 legend: {
@@ -311,8 +323,24 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, ticks: { stepSize: calcularStepSize(data.tx, data.rx) }, grid: { color: '#4a5568' } },
-                x: { grid: { color: '#4a5568' } }
+                y: { beginAtZero: true, ticks: { stepSize: calcularStepSize(data.tx, data.rx), color: 'white' }, grid: { color: '#4a5568' } },
+                x: { 
+                    type: 'time', // Establecer el tipo de escala a 'time'
+                    time: {
+                        unit: 'second', // Muestra segundos por defecto
+                        displayFormats: {
+                            second: 'HH:mm:ss', // Formato para segundos
+                            minute: 'HH:mm'
+                        },
+                        tooltipFormat: 'HH:mm:ss'
+                    },
+                    grid: { color: '#4a5568' }, 
+                    ticks: { 
+                        color: 'white',
+                        maxRotation: 45, 
+                        minRotation: 45 
+                    } 
+                }
             },
             plugins: {
                 legend: {
@@ -350,7 +378,11 @@ function mostrarRiesgo(data) {
 }
 
 function calcularStepSize(tx, rx) {
-    const maxValor = Math.max(...tx, ...rx);
+    const maxTx = Math.max(...tx);
+    const maxRx = Math.max(...rx);
+    const maxValor = Math.max(maxTx, maxRx); // Asegurarse de que ambas listas no estén vacías
+    
+    if (isNaN(maxValor) || maxValor === 0) return 100; // Valor por defecto si no hay datos
     if (maxValor <= 10) return 1;
     if (maxValor <= 50) return 5;
     if (maxValor <= 100) return 10;
