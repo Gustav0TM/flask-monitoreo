@@ -29,25 +29,25 @@
         <div class="grafico-contenedor circular">
             <h3>Memoria (%)</h3>
             <canvas id="memoryChart"></canvas>
-            <button class="boton-detalle-grafico" onclick="irDetalleMemoria('{{ hostname }}')">
-                Detalle
-            </button>
+            <a href="{{ url_for('dispositivo.detalle_hardware_memory', hostname=hostname) }}" class="boton-detalle-grafico">
+                Detalle Memoria
+            </a>
         </div>
 
         <div class="grafico-contenedor circular">
             <h3>Disco (%) - Particiones</h3>
             <canvas id="diskChart"></canvas>
-            <button class="boton-detalle-grafico" onclick="irDetalleDisco('{{ hostname }}')">
-                Detalle
-            </button>
+            <a href="{{ url_for('dispositivo.detalle_hardware_disk', hostname=hostname) }}" class="boton-detalle-grafico">
+                Detalle Disco
+            </a>
         </div>
 
         <div class="grafico-contenedor lineal">
             <h3>Bytes Tx / Rx (MB)</h3>
             <canvas id="txRxChart"></canvas>
-            <button class="boton-detalle-grafico" onclick="irDetalleRed('{{ hostname }}')">
-                Detalle
-            </button>
+            <a href="{{ url_for('dispositivo.detalle_hardware_gpu', hostname=hostname) }}" class="boton-detalle-grafico">
+                Detalle GPU
+            </a>
         </div>
 
     </div>
