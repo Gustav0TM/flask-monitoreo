@@ -1,56 +1,3 @@
-{% extends 'layout/templates.html' %}
-
-{% block titulo %}Detalle del Dispositivo - {{ hostname }}{% endblock %}
-
-{% block contenido %}
-<header class="dashboard-header">
-    Detalle del Dispositivo: {{ hostname }}
-</header>
-
-<main class="dashboard-main">
-    <div class="titulo-con-riesgo">
-        <h2 class="titulo-central">Monitoreo Gráfico en Tiempo Real</h2>
-        <div id="riskIndicator" class="indicador-riesgo">Riesgo: N/A</div>
-        <div class="header-actions">
-            <a href="{{ url_for('dashboard.index') }}" class="boton-retroceso">
-                Listado de Servidores
-            </a>
-            <button class="boton-descarga" id="downloadButton">
-                <i class="fas fa-download"></i>
-            </button>
-        </div>
-    </div>
-
-    <div class="contenedor-graficos">
-        
-        {# Contenedor de CPU - Ahora el div completo es clickeable #}
-        <div class="grafico-contenedor lineal clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_cpu', hostname=hostname) }}">
-            <h3>Uso de CPU</h3>
-            <canvas id="cpuChart"></canvas>
-        </div>
-
-        {# Contenedor de Memoria - Ahora el div completo es clickeable #}
-        <div class="grafico-contenedor circular clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_memory', hostname=hostname) }}">
-            <h3>Memoria (%)</h3>
-            <canvas id="memoryChart"></canvas>
-        </div>
-
-        {# Contenedor de Disco - Ahora el div completo es clickeable #}
-        <div class="grafico-contenedor circular clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_disk', hostname=hostname) }}">
-            <h3>Disco (%) - Particiones</h3>
-            <canvas id="diskChart"></canvas>
-        </div>
-
-        {# Contenedor de Tx/Rx (GPU) - Ahora el div completo es clickeable #}
-        <div class="grafico-contenedor lineal clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_gpu', hostname=hostname) }}">
-            <h3>Bytes Tx / Rx (MB)</h3>
-            <canvas id="txRxChart"></canvas>
-        </div>
-
-    </div>
-</main>
-{% endblock %}
-
 {% block extra_js %}
 <script>
 let cpuChartInstance = null;
@@ -74,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     actualizarDetalle();
     setInterval(actualizarDetalle, 5000);
 
-    // Lógica para hacer los contenedores de gráfico clickeables
     document.querySelectorAll('.clickable-chart').forEach(chartContainer => {
         chartContainer.addEventListener('click', () => {
             const href = chartContainer.getAttribute('data-href');
@@ -84,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Lógica para el nuevo botón de descarga
     document.getElementById('downloadButton').addEventListener('click', () => {
         generarPDFReporte(hostname);
     });
@@ -146,13 +91,8 @@ function renderCharts(data) {
                     }
                 },
                 datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    offset: 4,
-                    color: 'black',
-                    font: { size: 10, weight: 'normal' },
-                    rotation: 0,
-                    formatter: value => value.toFixed(1) + ' %'
+                    // Solo si necesitas datalabels en la línea, ajusta la visibilidad o quítalo si estorba
+                    display: false // Deshabilitar por defecto para líneas para evitar aglomeración
                 }
             }
         },
@@ -395,57 +335,61 @@ async function generarPDFReporte(hostname) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'pt', 'a4'); // 'p' para retrato, 'pt' para puntos, 'a4' para tamaño de página
 
-    // 1. Información General y Título
-    const tituloPagina = document.querySelector('.dashboard-header').innerText;
-    const tituloCentral = document.querySelector('.titulo-central').innerText; // Aunque no se usa directamente en el PDF, se puede mantener para referencia
-    const riesgoTexto = document.getElementById('riskIndicator').innerText;
-
     let yOffset = 40; // Margen superior inicial
 
+    // Título principal del documento
     doc.setFontSize(22);
-    doc.text(tituloPagina, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
+    doc.text("REPORTE DE MONITOREO DE DISPOSITIVO", doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
     yOffset += 30;
 
+    // Nombre del dispositivo y riesgo
     doc.setFontSize(16);
     doc.text(`Dispositivo: ${hostname}`, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
     yOffset += 20;
 
-    doc.setFontSize(12);
-    doc.text(riesgoTexto, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
-    yOffset += 30;
-
+    const riskIndicatorElement = document.getElementById('riskIndicator');
+    if (riskIndicatorElement) {
+        doc.setFontSize(12);
+        doc.text(riskIndicatorElement.innerText, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
+        yOffset += 30;
+    }
 
     // 2. Capturar y añadir cada gráfico como imagen
-
     const chartContainers = document.querySelectorAll('.grafico-contenedor');
     for (const container of chartContainers) {
         const chartCanvas = container.querySelector('canvas');
-        const chartTitle = container.querySelector('h3').innerText;
+        const chartTitle = container.querySelector('h3').innerText; // El título H3 del contenedor
 
         if (chartCanvas) {
+            // Comprobar si hay suficiente espacio para el título y el gráfico
+            const estimatedChartHeight = 350; // Estimación de la altura del gráfico + margen
+            if (yOffset + 20 + estimatedChartHeight > doc.internal.pageSize.height - 40) {
+                doc.addPage();
+                yOffset = 40; // Reiniciar yOffset para la nueva página
+            }
+
             // Añadir un título para el gráfico en el PDF
             doc.setFontSize(14);
             doc.text(chartTitle, 40, yOffset); // Margen izquierdo
-            yOffset += 20;
+            yOffset += 20; // Espacio después del título
 
             // Esperar a que html2canvas capture el canvas como imagen
             const canvasImage = await html2canvas(chartCanvas, {
-                scale: 2, // Aumenta la escala para mejor calidad
-                useCORS: true, // Importante si tienes imágenes de fuentes externas
-                logging: false // Desactiva logs de html2canvas
+                scale: 3, // Aumenta la escala para mejor calidad y legibilidad de ejes
+                useCORS: true, 
+                logging: false,
+                width: chartCanvas.offsetWidth, // Capturar el ancho visible
+                height: chartCanvas.offsetHeight // Capturar la altura visible
             });
 
             const imgData = canvasImage.toDataURL('image/png');
-            const imgWidth = 500; // Ancho deseado para la imagen en el PDF
-            const imgHeight = (canvasImage.height * imgWidth) / canvasImage.width;
+            let imgWidth = 550; // Ancho deseado para la imagen en el PDF
+            let imgHeight = (canvasImage.height * imgWidth) / canvasImage.width;
 
-            // Comprobar si hay suficiente espacio en la página actual
-            if (yOffset + imgHeight > doc.internal.pageSize.height - 40) { // 40 es un margen inferior
-                doc.addPage();
-                yOffset = 40; // Reiniciar yOffset para la nueva página
-                doc.setFontSize(14);
-                doc.text(chartTitle, 40, yOffset);
-                yOffset += 20;
+            // Si la imagen es demasiado alta, escalar para que quepa en la página
+            if (imgHeight > doc.internal.pageSize.height - yOffset - 40) {
+                imgHeight = doc.internal.pageSize.height - yOffset - 40;
+                imgWidth = (canvasImage.width * imgHeight) / canvasImage.height;
             }
 
             doc.addImage(imgData, 'PNG', (doc.internal.pageSize.width - imgWidth) / 2, yOffset, imgWidth, imgHeight);
@@ -453,7 +397,132 @@ async function generarPDFReporte(hostname) {
         }
     }
 
-    // 3. Descargar el PDF
+    // 3. Añadir información general de hardware
+    // Aquí es donde harás la llamada al backend para obtener los datos.
+    // Asumiendo el endpoint JSON: /api/dispositivo/<hostname>/hardware_data
+    try {
+        const response = await fetch(`/api/dispositivo/${hostname}/hardware_data`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const hardwareInfo = await response.json();
+
+        // Añadir una nueva página para la información de hardware si es necesario
+        if (yOffset + 100 > doc.internal.pageSize.height - 40) { // Estimar espacio para el título de sección
+            doc.addPage();
+            yOffset = 40;
+        }
+
+        doc.setFontSize(18);
+        doc.text("INFORMACIÓN DETALLADA DEL HARDWARE", doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
+        yOffset += 30;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0); // Texto negro para mejor legibilidad en PDF
+
+        // Función auxiliar para añadir texto formateado
+        const addText = (label, value) => {
+            const currentLine = `${label}: ${value}`;
+            const textWidth = doc.getStringUnitWidth(currentLine) * doc.internal.pageSize.width / doc.internal.scaleFactor;
+            
+            // Si el texto excede el ancho de la página, añadirlo en una nueva línea o con salto de línea automático
+            if (textWidth > doc.internal.pageSize.width - 80) { // 80pt = 40pt de margen a cada lado
+                const splitText = doc.splitTextToSize(currentLine, doc.internal.pageSize.width - 80);
+                doc.text(splitText, 40, yOffset);
+                yOffset += (splitText.length * 12); // Aumentar yOffset por cada línea
+            } else {
+                doc.text(currentLine, 40, yOffset);
+                yOffset += 12; // Espacio entre líneas
+            }
+            if (yOffset > doc.internal.pageSize.height - 40) {
+                doc.addPage();
+                yOffset = 40;
+                doc.setFontSize(10); // Restaurar tamaño de fuente después de la página
+                doc.setTextColor(0, 0, 0);
+            }
+        };
+
+        // Recorrer el objeto hardwareInfo y añadirlo al PDF
+        for (const section in hardwareInfo) {
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0); // Color para títulos de sección
+            if (yOffset + 20 > doc.internal.pageSize.height - 40) { // Estimar espacio para el título de sección
+                doc.addPage();
+                yOffset = 40;
+            }
+            doc.text(section.toUpperCase(), 40, yOffset);
+            yOffset += 15;
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0); // Restaurar color para detalles
+
+            const details = hardwareInfo[section];
+            if (typeof details === 'object' && !Array.isArray(details)) {
+                for (const key in details) {
+                    if (typeof details[key] === 'object' && !Array.isArray(details[key])) {
+                        doc.text(`  ${key}:`, 50, yOffset); // Subsección indentada
+                        yOffset += 12;
+                        for (const subKey in details[key]) {
+                            addText(`    ${subKey}`, details[key][subKey]); // Sub-subsección más indentada
+                        }
+                    } else if (Array.isArray(details[key])) {
+                        doc.text(`  ${key}:`, 50, yOffset);
+                        yOffset += 12;
+                        details[key].forEach((item, index) => {
+                            if (typeof item === 'object') {
+                                for (const itemKey in item) {
+                                    addText(`    ${itemKey} ${index + 1}`, item[itemKey]);
+                                }
+                            } else {
+                                addText(`    ${item}`, '');
+                            }
+                        });
+                    } else {
+                        addText(`  ${key}`, details[key]);
+                    }
+                }
+            } else if (Array.isArray(details)) {
+                details.forEach((item, index) => {
+                    if (typeof item === 'object') {
+                        doc.text(`  Elemento ${index + 1}:`, 50, yOffset);
+                        yOffset += 12;
+                        for (const itemKey in item) {
+                             if (typeof item[itemKey] === 'object' && !Array.isArray(item[itemKey])) {
+                                doc.text(`    ${itemKey}:`, 60, yOffset);
+                                yOffset += 12;
+                                for (const subItemKey in item[itemKey]) {
+                                    addText(`      ${subItemKey}`, item[itemKey][subItemKey]);
+                                }
+                            } else if (Array.isArray(item[itemKey])) {
+                                doc.text(`    ${itemKey}:`, 60, yOffset);
+                                yOffset += 12;
+                                item[itemKey].forEach((arrItem, arrIndex) => {
+                                    addText(`      ${arrItem}`, '');
+                                });
+                            } else {
+                                addText(`    ${itemKey}`, item[itemKey]);
+                            }
+                        }
+                    } else {
+                        addText(`  - ${item}`, '');
+                    }
+                });
+            } else {
+                addText(`  ${section}`, details);
+            }
+            yOffset += 10; // Espacio extra después de cada sección
+        }
+
+    } catch (err) {
+        console.error('Error al obtener datos de hardware:', err);
+        // Puedes añadir un mensaje de error al PDF si lo deseas
+        doc.setFontSize(12);
+        doc.setTextColor(255, 0, 0); // Rojo
+        doc.text("Error al cargar la información detallada del hardware.", 40, yOffset + 20);
+        doc.text("Asegúrese de que el agente esté enviando estos datos.", 40, yOffset + 35);
+        yOffset += 60;
+    }
+    
+    // 4. Descargar el PDF
     doc.save(`Reporte_Dispositivo_${hostname}_${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 </script>
