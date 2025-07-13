@@ -459,6 +459,68 @@ main.dashboard-main {
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
+/* Contenedor para los botones del encabezado, para que se alineen a la derecha */
+.titulo-con-riesgo {
+    display: flex;
+    justify-content: space-between; /* Empuja el título a la izquierda y las acciones a la derecha */
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px; /* Espacio entre los botones */
+    align-items: center;
+}
+
+/* Estilos comunes para botones del encabezado */
+.boton-retroceso, .boton-descarga {
+    background-color: #6a1b9a; /* Morado oscuro */
+    color: white;
+    padding: 10px 15px; /* Ajusta el padding para centrar el contenido */
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    height: 40px; /* Altura fija para alinearlos */
+}
+
+/* Efectos hover para ambos botones */
+.boton-retroceso:hover, .boton-descarga:hover {
+    background-color: #4a148c; /* Morado más oscuro para el hover */
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilos específicos para el botón de descarga para hacerlo más compacto */
+.boton-descarga {
+    background-color: #6a1b9a;
+    padding: 8px 12px; /* Un poco menos de padding horizontal */
+    font-size: 1rem; /* Mantiene el tamaño del icono razonable */
+}
+
+
+/* Efectos visuales para los contenedores de gráficos clickeables */
+.clickable-chart {
+    cursor: pointer; /* Indica que es clickeable */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.clickable-chart:hover {
+    transform: translateY(-5px); /* Pequeño efecto de elevación al pasar el mouse */
+    box-shadow: 0 10px 20px rgba(39, 85, 138, 0.4); /* Sombra más pronunciada */
+}
+
+.clickable-chart:active {
+    transform: translateY(0); /* Vuelve a la posición original al hacer clic */
+    box-shadow: none; /* Elimina la sombra al hacer clic */
+}
+
 /* Estilo para mensajes de error, si los tienes */
 .error-message {
     background-color: rgba(255, 82, 82, 0.2);

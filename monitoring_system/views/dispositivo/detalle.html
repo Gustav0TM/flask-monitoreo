@@ -11,13 +11,12 @@
     <div class="titulo-con-riesgo">
         <h2 class="titulo-central">Monitoreo Gráfico en Tiempo Real</h2>
         <div id="riskIndicator" class="indicador-riesgo">Riesgo: N/A</div>
-        <div class="header-actions"> {# Contenedor para los botones del encabezado #}
+        <div class="header-actions">
             <a href="{{ url_for('dashboard.index') }}" class="boton-retroceso">
                 Listado de Servidores
             </a>
-            {# Nuevo botón de descarga, ahora a la derecha del anterior #}
             <button class="boton-descarga" id="downloadButton">
-                <i class="fas fa-download"></i> {# Icono de descarga #}
+                <i class="fas fa-download"></i>
             </button>
         </div>
     </div>
@@ -400,62 +399,4 @@ function calcularStepSize(tx, rx) {
     return Math.ceil(maxValor / 10);
 }
 </script>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    /* Contenedor para los botones del encabezado, para que se alineen a la derecha */
-    .titulo-con-riesgo {
-        display: flex;
-        justify-content: space-between; /* Empuja el título a la izquierda y las acciones a la derecha */
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 10px; /* Espacio entre los botones */
-        align-items: center;
-    }
-
-    .boton-retroceso, .boton-descarga { /* Aplicamos estilos base a ambos botones */
-        background-color: #6a1b9a; /* Un color morado oscuro, similar a tus elementos visuales */
-        color: white;
-        padding: 8px 15px;
-        border: none;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: bold;
-        transition: background-color 0.3s ease, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        display: flex; 
-        align-items: center;
-        gap: 5px; 
-        cursor: pointer; /* Para indicar que son clickeables */
-    }
-
-    .boton-retroceso:hover, .boton-descarga:hover {
-        background-color: #4a148c; /* Un morado más oscuro para el hover */
-        transform: translateY(-3px); /* Ligeramente hacia arriba */
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Sombra para efecto de elevación */
-    }
-
-    /* Estilos específicos para el botón de descarga para hacerlo más compacto */
-    .boton-descarga {
-        padding: 8px 12px; /* Un poco menos de padding horizontal */
-        font-size: 1rem; /* Mantiene el tamaño del icono razonable */
-    }
-
-
-    /* Efectos visuales para los contenedores de gráficos clickeables */
-    .clickable-chart {
-        cursor: pointer; /* Indica que es clickeable */
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-
-    .clickable-chart:hover {
-        transform: translateY(-5px); /* Pequeño efecto de elevación al pasar el mouse */
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); /* Sombra más pronunciada */
-    }
-
-</style>
 {% endblock %}
