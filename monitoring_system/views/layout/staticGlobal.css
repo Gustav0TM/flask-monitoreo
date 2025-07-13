@@ -365,6 +365,44 @@ main.dashboard-main {
     margin: 0 auto;
 }
 
+/* Estilos para la información adicional dentro de cada gráfico */
+.info-adicional-grafico {
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background-color: #3b4559; /* Un tono un poco más claro que el fondo de la tarjeta */
+    border-radius: 8px;
+    text-align: left; /* Alinea el texto a la izquierda */
+    font-size: 0.85rem;
+    color: var(--text-color);
+    max-height: 150px; /* Limita la altura para que no ocupe demasiado espacio */
+    overflow-y: auto; /* Permite desplazamiento si el contenido es demasiado largo */
+    width: 100%; /* Ocupa todo el ancho disponible */
+    box-sizing: border-box; /* Incluye padding en el ancho */
+}
+
+.info-adicional-grafico h4,
+.info-adicional-grafico h5 {
+    color: var(--primary-color); /* Color de los títulos de sección */
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    text-align: center; /* Centra los subtítulos dentro de la caja */
+}
+
+.info-adicional-grafico .info-group {
+    margin-bottom: 0.5rem;
+}
+
+.info-adicional-grafico p {
+    margin: 0.2rem 0; /* Espaciado ajustado para los párrafos */
+}
+
+.info-adicional-grafico hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 0.7rem 0;
+}
+
 /* Indicador de riesgo flotante en la vista detalle */
 .indicador-riesgo {
     padding: 0.8rem 1.2rem;

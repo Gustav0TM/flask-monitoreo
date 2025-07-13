@@ -21,6 +21,32 @@
         <div class="grafico-contenedor lineal">
             <h3>Uso de CPU</h3>
             <canvas id="cpuChart"></canvas>
+            <div class="info-adicional-grafico">
+                <h4>Procesador (CPU)</h4>
+                <div class="info-group">
+                    <p><strong>Nombre:</strong> {{ hardware_info_display.Processor.Name }}</p>
+                    <p><strong>Fabricante:</strong> {{ hardware_info_display.Processor.Manufacturer }}</p>
+                    <p><strong>Descripción:</strong> {{ hardware_info_display.Processor.Description }}</p>
+                    <p><strong>Núcleos:</strong> {{ hardware_info_display.Processor.NumberOfCores }}</p>
+                    <p><strong>Hilos:</strong> {{ hardware_info_display.Processor.NumberOfLogicalProcessors }}</p>
+                    <p><strong>Arquitectura:</strong> {{ hardware_info_display.Processor.Architecture }}</p>
+                    <p><strong>ID de Procesador:</strong> {{ hardware_info_display.Processor.ProcessorId }}</p>
+                    <p><strong>Velocidad Base (MHz):</strong> {{ hardware_info_display.Processor.MaxClockSpeed_MHz }}</p>
+                    <p><strong>Velocidad Actual (MHz):</strong> {{ hardware_info_display.Processor.CurrentClockSpeed_MHz }}</p>
+                    <p><strong>Familia/Modelo/Stepping:</strong> {{ hardware_info_display.Processor.Family }}.{{ hardware_info_display.Processor.Model }}.{{ hardware_info_display.Processor.Stepping }}</p>
+                    <p><strong>Instrucciones:</strong> {{ hardware_info_display.Processor.Instructions }}</p>
+                </div>
+                <h5>Caché</h5>
+                <div class="info-group">
+                    {% for cache in hardware_info_display.Processor.CacheDetails %}
+                        <p>{{ cache }}</p>
+                    {% else %}
+                        <p>No se pudo obtener información detallada de la caché.</p>
+                    {% endfor %}
+                    <p><strong>L2 Caché:</strong> {{ hardware_info_display.Processor.L2CacheSize_KB }} KB</p>
+                    <p><strong>L3 Caché:</strong> {{ hardware_info_display.Processor.L3CacheSize_KB }} KB</p>
+                </div>
+            </div>
             <a href="{{ url_for('dispositivo.detalle_hardware_cpu', hostname=hostname) }}" class="boton-detalle-grafico">
                 Detalle CPU
             </a>
@@ -29,6 +55,22 @@
         <div class="grafico-contenedor circular">
             <h3>Memoria (%)</h3>
             <canvas id="memoryChart"></canvas>
+            <div class="info-adicional-grafico">
+                <h4>Memoria</h4>
+                <div class="info-group">
+                    <p><strong>Total Instalada:</strong> {{ hardware_info_display.Memory.Total_Installed_GB }} GB</p>
+                    <p><strong>Módulos Usados:</strong> {{ hardware_info_display.Memory.Number_of_Memory_Modules }}</p>
+                    <p><strong>Tipo (Estimado):</strong> {{ hardware_info_display.Memory.Type }}</p>
+                </div>
+                <h5>Detalle de Módulos</h5>
+                <div class="info-group">
+                    {% for module in hardware_info_display.Memory.Details %}
+                        <p><strong>Slot {{ module.Slot }}:</strong> {{ module.Capacity_GB }} GB ({{ module.Speed_MHz }} MHz) - {{ module.Manufacturer }} (PN: {{ module.Part_Number }})</p>
+                    {% else %}
+                        <p>No se pudo obtener detalle de módulos RAM.</p>
+                    {% endfor %}
+                </div>
+            </div>
             <button class="boton-detalle-grafico" onclick="irDetalleMemoria('{{ hostname }}')">
                 Detalle
             </button>
@@ -37,6 +79,20 @@
         <div class="grafico-contenedor circular">
             <h3>Disco (%) - Particiones</h3>
             <canvas id="diskChart"></canvas>
+            <div class="info-adicional-grafico">
+                <h4>Almacenamiento (Discos)</h4>
+                <div class="info-group">
+                    {% for disk in hardware_info_display.Disks %}
+                        <p><strong>Modelo:</strong> {{ disk.Model }}</p>
+                        <p><strong>Número de Serie:</strong> {{ disk.SerialNumber }}</p>
+                        <p><strong>Capacidad:</strong> {{ disk.Size_GB }} GB</p>
+                        <p><strong>Interfaz:</strong> {{ disk.InterfaceType }}</p>
+                        {% if not loop.last %}<hr>{% endif %}
+                    {% else %}
+                        <p>No se encontró información de unidades de disco.</p>
+                    {% endfor %}
+                </div>
+            </div>
             <button class="boton-detalle-grafico" onclick="irDetalleDisco('{{ hostname }}')">
                 Detalle
             </button>
@@ -45,6 +101,21 @@
         <div class="grafico-contenedor lineal">
             <h3>Bytes Tx / Rx (MB)</h3>
             <canvas id="txRxChart"></canvas>
+            <div class="info-adicional-grafico">
+                <h4>Gráficos (GPU)</h4>
+                <div class="info-group">
+                    {% for gpu in hardware_info_display.Graphics %}
+                        <p><strong>Nombre:</strong> {{ gpu.Name }}</p>
+                        <p><strong>Fabricante:</strong> {{ gpu.Manufacturer }}</p>
+                        <p><strong>Versión del Driver:</strong> {{ gpu.Driver_Version }}</p>
+                        <p><strong>VRAM:</strong> {{ gpu.VRAM_MB }} MB</p>
+                        <p><strong>Resolución Actual:</strong> {{ gpu.Resolution }}</p>
+                        {% if not loop.last %}<hr>{% endif %}
+                    {% else %}
+                        <p>No se encontró información de tarjetas gráficas.</p>
+                    {% endfor %}
+                </div>
+            </div>
             <button class="boton-detalle-grafico" onclick="irDetalleRed('{{ hostname }}')">
                 Detalle
             </button>
