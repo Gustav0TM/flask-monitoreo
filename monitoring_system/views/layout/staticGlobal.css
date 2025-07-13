@@ -5,7 +5,7 @@ body {
     color: #fff;
     margin: 0;
     padding: 0;
-}
+
 .info-particiones {
     margin-top: 1rem;
     text-align: center;
@@ -15,7 +15,7 @@ body {
 .info-particion-item {
     margin-bottom: 0.5rem;
 }
-
+}
 /* Variables globales para colores y fuentes */
 :root {
     --primary-color: #00bcd4;          /* Color principal (celeste) */
@@ -32,7 +32,6 @@ body {
     --font-main: 'Roboto Mono', monospace; /* Fuente para texto general */
     --font-heading: 'Orbitron', sans-serif; /* Fuente para títulos */
 }
-
 /* ================== Títulos generales h1, h2 ================== */
 h1, h2 {
     margin-top: 0;
@@ -43,7 +42,6 @@ h1, h2 {
     font-family: var(--font-heading);
     letter-spacing: 1px;
 }
-
 /* ================== Formularios globales (Login, otros inputs) ================== */
 input[type="text"],
 input[type="password"],
@@ -64,7 +62,6 @@ input[type="number"]:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.3);
 }
-
 button {
     background-color: var(--primary-color);
     color: var(--background-color);
@@ -84,13 +81,11 @@ button:hover {
     background-color: var(--primary-color-dark);
     transform: translateY(-2px);
 }
-
 .form-group {
     display: flex;
     flex-direction: column;
     margin-bottom: 1.2rem;
 }
-
 /* ================== Login - Formulario de inicio de sesión ================== */
 .login-form-container {
     background-color: var(--card-background);
@@ -127,14 +122,12 @@ button:hover {
 .login-form-container button {
     max-width: 200px;
 }
-
 /* ================== Dashboard - Vista principal de dispositivos ================== */
 .dashboard-body {
     background-color: var(--background-color);
     font-family: var(--font-main);
     color: var(--text-color);
 }
-
 /* Encabezado del dashboard */
 header.dashboard-header {
     background: linear-gradient(90deg, var(--primary-color-dark), var(--secondary-color));
@@ -152,19 +145,15 @@ header.dashboard-header {
     align-items: center;
     justify-content: center;
 }
-
-.header-actions {
+.header-buttons {
     display: flex;
-    gap: 10px;
+    justify-content: space-between;
     align-items: center;
-    justify-content: flex-end;
-    margin-top: 1rem;
+    gap: 10px;
     width: 100%;
     max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 1rem auto 0;
 }
-
 /* Contenido del encabezado */
 .titulo-con-riesgo {
     display: flex;
@@ -178,8 +167,62 @@ header.dashboard-header {
     text-align: center;
     margin: 0;
 }
-
-/* Botón de Retroceso (general) */
+/* Contenedor de los gráficos */
+.contenedor-graficos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 8px;
+    width: 100%;
+    max-width: 1400px;
+    margin-top: 1rem;
+}
+/* Tarjeta de cada gráfico */
+.grafico-contenedor {
+    background-color: var(--card-background);
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 400px;
+}
+.grafico-contenedor h3 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+    font-family: var(--font-heading);
+    flex-shrink: 0;
+}
+.grafico-contenedor.lineal canvas {
+    width: 100%;
+    height: 300px;
+    max-height: 300px;
+    margin: 0 auto;
+}
+.grafico-contenedor.circular {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.grafico-contenedor.circular canvas {
+    width: 100%;
+    height: 300px;
+    max-height: 300px;
+    margin: 0 auto;
+}
+.indicador-riesgo {
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    font-weight: bold;
+    color: var(--background-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    background-color: #4a5568;
+    text-align: center;
+    min-width: 200px;
+}
+/* ================== Botón de Retroceso (general) ================== */
 .boton-retroceso {
     background-color: var(--secondary-color);
     color: white;
@@ -199,8 +242,6 @@ header.dashboard-header {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0,0,0,0.3);
 }
-
-/* Botón de Descarga */
 .boton-descarga {
     background-color: var(--success-color);
     color: white;
@@ -220,8 +261,7 @@ header.dashboard-header {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0,0,0,0.3);
 }
-
-/* Efecto en gráficos clickeables */
+/* ================== Efecto en gráficos clickeables ================== */
 .clickable-chart {
     cursor: pointer;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -231,46 +271,4 @@ header.dashboard-header {
 .clickable-chart:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-}
-
-/* Contenedor de los gráficos */
-.contenedor-graficos {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 8px;
-    width: 100%;
-    max-width: 1400px;
-    margin-top: 1rem;
-}
-
-/* Tarjeta de cada gráfico */
-.grafico-contenedor {
-    background-color: var(--card-background);
-    padding: 1rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 400px;
-}
-
-.grafico-contenedor h3 {
-    margin-bottom: 0.5rem;
-    color: var(--primary-color);
-    font-family: var(--font-heading);
-    flex-shrink: 0;
-}
-
-/* Indicador de riesgo flotante en la vista detalle */
-.indicador-riesgo {
-    padding: 0.8rem 1.2rem;
-    border-radius: 8px;
-    font-weight: bold;
-    color: var(--background-color);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    background-color: #4a5568;
-    text-align: center;
-    min-width: 200px;
 }
