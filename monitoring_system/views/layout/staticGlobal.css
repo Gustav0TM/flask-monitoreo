@@ -505,8 +505,9 @@ main.dashboard-main {
     align-items: center;
     gap: 5px;
     cursor: pointer;
-    width: 80px;
+    width: 40px;
     height: 40px;
+    margin-top: inherit;
 }
 
 /* Efectos hover para ambos botones */
