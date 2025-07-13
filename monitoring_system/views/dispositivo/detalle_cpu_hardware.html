@@ -10,105 +10,173 @@
         <a href="{{ url_for('dispositivo.detalle_dispositivo', hostname=hostname) }}" class="boton-retroceso-new">
             &larr; Volver
         </a>
-        {# El título ahora es dinámico y centrado #}
         <h1 class="titulo-central-header">DETALLE AVANZADO DE {{ section_title | default('HARDWARE') }} - {{ hostname }}</h1>
     </div>
 </header>
 
 <main class="dashboard-main">
-    {# Eliminar el bloque de riesgo actual que estaba aquí antes si lo habías dejado #}
-    {# <div class="titulo-con-riesgo"> ... </div> #}
-
     {% if hardware_info.error %}
         <div class="error-message">
             <p><strong>Error al obtener detalles del hardware:</strong> {{ hardware_info.error }}</p>
             <p>Asegúrate de que el agente se está ejecutando con permisos de administrador en <strong>{{ hostname }}</strong> y ha enviado la información de hardware.</p>
         </div>
+    {% elif hardware_info.error_section %}
+        <div class="error-message">
+            <p>{{ hardware_info.error_section }}</p>
+            <p>Es posible que esta información no esté disponible o el agente no la haya recopilado.</p>
+        </div>
     {% else %}
-        <div class="cpu-z-layout">
-            {# Condicional para mostrar PROCESADOR #}
+        <div class="cpu-z-style-container">
+            {# --- Sección de PROCESADOR (CPU) --- #}
             {% if hardware_info.Processor %}
-            <div class="cpu-z-tab">
+            <div class="cpu-z-section">
                 <h3>Procesador (CPU)</h3>
-                <div class="info-group">
-                    <p><strong>Nombre:</strong> {{ hardware_info.Processor.Name | default('N/A') }}</p>
-                    <p><strong>Fabricante:</strong> {{ hardware_info.Processor.Manufacturer | default('N/A') }}</p>
-                    <p><strong>Descripción:</strong> {{ hardware_info.Processor.Description | default('N/A') }}</p>
-                    <p><strong>Núcleos:</strong> {{ hardware_info.Processor.NumberOfCores | default('N/A') }}</p>
-                    <p><strong>Hilos:</strong> {{ hardware_info.Processor.NumberOfLogicalProcessors | default('N/A') }}</p>
-                    <p><strong>Arquitectura:</strong> {{ hardware_info.Processor.Architecture | default('N/A') }}</p>
-                    <p><strong>ID de Procesador:</strong> {{ hardware_info.Processor.ProcessorId | default('N/A') }}</p>
-                    <p><strong>Velocidad Base (MHz):</strong> {{ hardware_info.Processor.MaxClockSpeed_MHz | default('N/A') }}</p>
-                    <p><strong>Velocidad Actual (MHz):</strong> {{ hardware_info.Processor.CurrentClockSpeed_MHz | default('N/A') }}</p>
-                    <p><strong>Familia/Modelo/Stepping:</strong> {{ hardware_info.Processor.Family | default('N/A') }}.{{ hardware_info.Processor.Model | default('N/A') }}.{{ hardware_info.Processor.Stepping | default('N/A') }}</p>
-                    <p><strong>Instrucciones:</strong> {{ hardware_info.Processor.Instructions | default('N/A') }}</p>
+                <div class="cpu-z-info-grid">
+                    <div class="cpu-z-item"><strong>Nombre:</strong> {{ hardware_info.Processor.Name | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Nombre Código:</strong> {{ hardware_info.Processor.CodeName | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Paquete:</strong> {{ hardware_info.Processor.Package | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Tecnología:</strong> {{ hardware_info.Processor.Technology | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>TDP Máx.:</strong> {{ hardware_info.Processor.MaxTDP | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Voltaje Núcleo:</strong> {{ hardware_info.Processor.CoreVoltage | default('N/A') }}</div>
+                    <div class="cpu-z-item-wide"><strong>Especificación:</strong> {{ hardware_info.Processor.Specification | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Familia:</strong> {{ hardware_info.Processor.Family | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Modelo:</strong> {{ hardware_info.Processor.Model | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Stepping:</strong> {{ hardware_info.Processor.Stepping | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Ext. Familia:</strong> {{ hardware_info.Processor.ExtFamily | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Ext. Modelo:</strong> {{ hardware_info.Processor.ExtModel | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Revisión:</strong> {{ hardware_info.Processor.Revision | default('N/A') }}</div>
+                    <div class="cpu-z-item-wide"><strong>Instrucciones:</strong> {{ hardware_info.Processor.Instructions | default('N/A') }}</div>
                 </div>
                 <h4>Caché</h4>
-                <div class="info-group">
+                <div class="cpu-z-info-grid cache-grid">
                     {% for cache in hardware_info.Processor.CacheDetails %}
-                        <p>{{ cache }}</p>
+                        <div class="cpu-z-item-wide">{{ cache }}</div>
                     {% else %}
-                        <p>No se pudo obtener información detallada de la caché.</p>
+                        <div class="cpu-z-item-wide">No se pudo obtener información detallada de la caché.</div>
                     {% endfor %}
-                    <p><strong>L2 Caché:</strong> {{ hardware_info.Processor.L2CacheSize_KB | default('N/A') }} KB</p>
-                    <p><strong>L3 Caché:</strong> {{ hardware_info.Processor.L3CacheSize_KB | default('N/A') }} KB</p>
+                    <div class="cpu-z-item"><strong>L2 Caché:</strong> {{ hardware_info.Processor.L2CacheSize_KB | default('N/A') }} KB</div>
+                    <div class="cpu-z-item"><strong>L3 Caché:</strong> {{ hardware_info.Processor.L3CacheSize_KB | default('N/A') }} KB</div>
                 </div>
             </div>
             {% endif %}
 
-            {# Condicional para mostrar MEMORIA #}
+            {# --- Sección de MEMORIA --- #}
             {% if hardware_info.Memory %}
-            <div class="cpu-z-tab">
+            <div class="cpu-z-section">
                 <h3>Memoria</h3>
-                <div class="info-group">
-                    <p><strong>Total Instalada:</strong> {{ hardware_info.Memory.Total_Installed_GB | default('N/A') }} GB</p>
-                    <p><strong>Módulos Usados:</strong> {{ hardware_info.Memory.Number_of_Memory_Modules | default('N/A') }}</p>
-                    <p><strong>Tipo (Estimado):</strong> {{ hardware_info.Memory.Type | default('N/A') }}</p>
-                </div>
-                <h4>Detalle de Módulos</h4>
-                <div class="info-group">
-                    {% for module in hardware_info.Memory.Details %}
-                        <p><strong>Slot {{ module.Slot | default('N/A') }}:</strong> {{ module.Capacity_GB | default('N/A') }} GB ({{ module.Speed_MHz | default('N/A') }} MHz) - {{ module.Manufacturer | default('N/A') }} (PN: {{ module.Part_Number | default('N/A') }})</p>
-                    {% else %}
-                        <p>No se pudo obtener detalle de módulos RAM.</p>
-                    {% endfor %}
+                <div class="cpu-z-info-grid">
+                    <div class="cpu-z-item"><strong>Tamaño Total:</strong> {{ hardware_info.Memory.Total_Installed_GB | default('N/A') }} GB</div>
+                    <div class="cpu-z-item"><strong>Módulos:</strong> {{ hardware_info.Memory.Number_of_Memory_Modules | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Tipo:</strong> {{ hardware_info.Memory.Type | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Velocidad:</strong> {{ hardware_info.Memory.Speed_MHz | default('N/A') }} MHz</div>
+                    <div class="cpu-z-item"><strong>Canal:</strong> {{ hardware_info.Memory.Channels | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Factor de Forma:</strong> {{ hardware_info.Memory.FormFactor | default('N/A') }}</div>
+                    <div class="cpu-z-item-wide"><strong>Dispositivos de Memoria:</strong></div>
+                    <div class="cpu-z-memory-modules">
+                        {% for module in hardware_info.Memory.Details %}
+                            <div class="memory-module">
+                                <div class="cpu-z-item"><strong>Banco:</strong> {{ module.BankLabel | default('N/A') }}</div>
+                                <div class="cpu-z-item"><strong>Tamaño:</strong> {{ module.Capacity_GB | default('N/A') }} GB</div>
+                                <div class="cpu-z-item"><strong>Velocidad:</strong> {{ module.Speed_MHz | default('N/A') }} MHz</div>
+                                <div class="cpu-z-item"><strong>Fabricante:</strong> {{ module.Manufacturer | default('N/A') }}</div>
+                                <div class="cpu-z-item-wide"><strong>Número de Parte:</strong> {{ module.Part_Number | default('N/A') }}</div>
+                                <div class="cpu-z-item-wide"><strong>Número de Serie:</strong> {{ module.SerialNumber | default('N/A') }}</div>
+                            </div>
+                        {% else %}
+                            <div class="cpu-z-item-wide">No se pudo obtener detalle de módulos RAM.</div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
             {% endif %}
 
-            {# Condicional para mostrar GRÁFICOS (GPU) #}
+            {# --- Sección de PLACA MADRE (Mainboard) --- #}
+            {% if hardware_info.Mainboard %}
+            <div class="cpu-z-section">
+                <h3>Placa Madre</h3>
+                <div class="cpu-z-info-grid">
+                    <div class="cpu-z-item"><strong>Fabricante:</strong> {{ hardware_info.Mainboard.Manufacturer | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Modelo:</strong> {{ hardware_info.Mainboard.Model | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Versión:</strong> {{ hardware_info.Mainboard.Version | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Número de Serie:</strong> {{ hardware_info.Mainboard.SerialNumber | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Chipset:</strong> {{ hardware_info.Mainboard.Chipset | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Southbridge:</strong> {{ hardware_info.Mainboard.Southbridge | default('N/A') }}</div>
+                </div>
+                <h4>BIOS</h4>
+                <div class="cpu-z-info-grid">
+                    <div class="cpu-z-item"><strong>Marca:</strong> {{ hardware_info.Mainboard.BIOS_Vendor | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Versión:</strong> {{ hardware_info.Mainboard.BIOS_Version | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Fecha:</strong> {{ hardware_info.Mainboard.BIOS_Date | default('N/A') }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {# --- Sección de GRÁFICOS (GPU) --- #}
             {% if hardware_info.Graphics %}
-            <div class="cpu-z-tab">
-                <h3>Gráficos (GPU)</h3>
-                <div class="info-group">
-                    {% for gpu in hardware_info.Graphics %}
-                        <p><strong>Nombre:</strong> {{ gpu.Name | default('N/A') }}</p>
-                        <p><strong>Fabricante:</strong> {{ gpu.Manufacturer | default('N/A') }}</p>
-                        <p><strong>Versión del Driver:</strong> {{ gpu.Driver_Version | default('N/A') }}</p>
-                        <p><strong>VRAM:</strong> {{ gpu.VRAM_MB | default('N/A') }} MB</p>
-                        <p><strong>Resolución Actual:</strong> {{ gpu.Resolution | default('N/A') }}</p>
-                        {% if not loop.last %}<hr>{% endif %}
-                    {% else %}
-                        <p>No se encontró información de tarjetas gráficas.</p>
-                    {% endfor %}
+            <div class="cpu-z-section">
+                <h3>Gráficos</h3>
+                {% for gpu in hardware_info.Graphics %}
+                <h4>Adaptador #{{ loop.index }}</h4>
+                <div class="cpu-z-info-grid">
+                    <div class="cpu-z-item"><strong>Nombre:</strong> {{ gpu.Name | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Nombre Código:</strong> {{ gpu.AdapterDACType | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Fabricante:</strong> {{ gpu.Manufacturer | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Tipo Chipset:</strong> {{ gpu.ChipType | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Memoria:</strong> {{ gpu.VRAM_MB | default('N/A') }} MB</div>
+                    <div class="cpu-z-item"><strong>Tipo de Memoria:</strong> {{ gpu.DedicatedMemoryType | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Interfaz:</strong> {{ gpu.Interface | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Versión del Driver:</strong> {{ gpu.Driver_Version | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Fecha del Driver:</strong> {{ gpu.DriverDate | default('N/A') }}</div>
                 </div>
+                {% if not loop.last %}<hr class="section-divider">{% endif %}
+                {% else %}
+                <p>No se encontró información de tarjetas gráficas.</p>
+                {% endfor %}
             </div>
             {% endif %}
 
-            {# Condicional para mostrar ALMACENAMIENTO (Discos) #}
+            {# --- Sección de ALMACENAMIENTO (Discos) --- #}
             {% if hardware_info.Disks %}
-            <div class="cpu-z-tab">
-                <h3>Almacenamiento (Discos)</h3>
-                <div class="info-group">
-                    {% for disk in hardware_info.Disks %}
-                        <p><strong>Modelo:</strong> {{ disk.Model | default('N/A') }}</p>
-                        <p><strong>Número de Serie:</strong> {{ disk.SerialNumber | default('N/A') }}</p>
-                        <p><strong>Capacidad:</strong> {{ disk.Size_GB | default('N/A') }} GB</p>
-                        <p><strong>Interfaz:</strong> {{ disk.InterfaceType | default('N/A') }}</p>
-                        {% if not loop.last %}<hr>{% endif %}
-                    {% else %}
-                        <p>No se encontró información de unidades de disco.</p>
-                    {% endfor %}
+            <div class="cpu-z-section">
+                <h3>Almacenamiento</h3>
+                {% for disk in hardware_info.Disks %}
+                <h4>Disco #{{ loop.index }}</h4>
+                <div class="cpu-z-info-grid">
+                    <div class="cpu-z-item"><strong>Modelo:</strong> {{ disk.Model | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Número de Serie:</strong> {{ disk.SerialNumber | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Revisión:</strong> {{ disk.Revision | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Capacidad:</strong> {{ disk.Size_GB | default('N/A') }} GB</div>
+                    <div class="cpu-z-item"><strong>Interfaz:</strong> {{ disk.InterfaceType | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Particiones:</strong>
+                        {% if disk.Partitions %}
+                            {{ disk.Partitions | join(', ') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                    <div class="cpu-z-item"><strong>Estado de Salud:</strong> {{ disk.HealthStatus | default('N/A') }}</div>
+                </div>
+                {% if not loop.last %}<hr class="section-divider">{% endif %}
+                {% else %}
+                <p>No se encontró información de unidades de disco.</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# --- Sección de SISTEMA OPERATIVO --- #}
+            {% if hardware_info.OS %}
+            <div class="cpu-z-section">
+                <h3>Sistema Operativo</h3>
+                <div class="cpu-z-info-grid">
+                    <div class="cpu-z-item-wide"><strong>Nombre:</strong> {{ hardware_info.OS.Name | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Versión:</strong> {{ hardware_info.OS.Version | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Build:</strong> {{ hardware_info.OS.BuildNumber | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Arquitectura:</strong> {{ hardware_info.OS.Architecture | default('N/A') }}</div>
+                    <div class="cpu-z-item-wide"><strong>Usuario Registrado:</strong> {{ hardware_info.OS.RegisteredUser | default('N/A') }}</div>
+                    <div class="cpu-z-item-wide"><strong>Número de Serie:</strong> {{ hardware_info.OS.SerialNumber | default('N/A') }}</div>
+                    <div class="cpu-z-item-wide"><strong>Directorio de Windows:</strong> {{ hardware_info.OS.WindowsDirectory | default('N/A') }}</div>
+                    <div class="cpu-z-item-wide"><strong>Directorio del Sistema:</strong> {{ hardware_info.OS.SystemDirectory | default('N/A') }}</div>
+                    <div class="cpu-z-item"><strong>Idioma:</strong> {{ hardware_info.OS.CurrentLanguage | default('N/A') }}</div>
                 </div>
             </div>
             {% endif %}
@@ -118,6 +186,109 @@
 </main>
 {% endblock %}
 
-{% block extra_js %}
-{# El script de la fecha se eliminó, ya no es necesario #}
+{% block extra_css %}
+<style>
+/* Estilos generales del contenedor para emular el aspecto de CPU-Z */
+.cpu-z-style-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espacio entre cada sección de hardware */
+    padding: 20px;
+    background-color: #1e293b; /* Un fondo oscuro similar a CPU-Z */
+    color: #f8f8f2; /* Texto claro */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    margin: 20px auto; /* Centrar y añadir margen */
+    max-width: 900px; /* Ancho máximo para la "pestaña" */
+}
+
+/* Estilo para cada sección de hardware (Procesador, Memoria, etc.) */
+.cpu-z-section {
+    border: 1px solid #4a5568; /* Bordes sutiles para las secciones */
+    padding: 15px;
+    border-radius: 6px;
+    background-color: #2d3748; /* Fondo ligeramente más claro que el contenedor principal */
+}
+
+.cpu-z-section h3 {
+    color: #00bcd4; /* Un color distintivo para los títulos de sección (ej. Procesador, Memoria) */
+    margin-top: 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #4a5568; /* Línea separadora bajo el título de sección */
+    padding-bottom: 5px;
+    font-size: 1.5em;
+    text-transform: uppercase;
+}
+
+.cpu-z-section h4 {
+    color: #cbd5e0; /* Color para subtítulos (ej. Caché, BIOS) */
+    margin-top: 15px;
+    margin-bottom: 8px;
+    font-size: 1.2em;
+    border-bottom: 1px dashed #64748b; /* Línea punteada para subtítulos */
+    padding-bottom: 3px;
+}
+
+/* Diseño de cuadrícula para la información */
+.cpu-z-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Columnas auto-ajustables */
+    gap: 8px 20px; /* Espacio vertical y horizontal entre los ítems */
+    margin-bottom: 10px;
+}
+
+.cpu-z-item {
+    display: flex;
+    align-items: baseline; /* Alinea el texto base */
+    gap: 5px;
+}
+
+.cpu-z-item strong {
+    color: #a7a7a7; /* Texto secundario para las etiquetas (ej. Nombre:, Fabricante:) */
+    flex-shrink: 0; /* Evita que la etiqueta se encoja */
+}
+
+.cpu-z-item-wide {
+    grid-column: 1 / -1; /* Ocupa todas las columnas disponibles en la cuadrícula */
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+/* Estilos específicos para la sección de Caché */
+.cache-grid {
+    grid-template-columns: auto; /* Una columna para el detalle de caché */
+}
+
+/* Estilos para los módulos de memoria RAM */
+.cpu-z-memory-modules {
+    grid-column: 1 / -1; /* Ocupa todas las columnas */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 15px;
+}
+
+.memory-module {
+    border-left: 2px solid #64748b; /* Barra vertical distintiva para cada módulo */
+    padding-left: 10px;
+}
+
+/* Divisor entre adaptadores de GPU o discos */
+.section-divider {
+    border: 0;
+    border-top: 1px solid #4a5568;
+    margin: 15px 0;
+}
+
+/* Mensajes de error */
+.error-message {
+    background-color: #ef4444; /* Rojo para errores */
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px;
+    text-align: center;
+}
+</style>
 {% endblock %}
