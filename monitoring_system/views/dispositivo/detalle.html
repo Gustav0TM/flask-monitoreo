@@ -395,66 +395,152 @@ async function generarPDFReporte(hostname) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'pt', 'a4'); // 'p' para retrato, 'pt' para puntos, 'a4' para tamaño de página
 
-    // 1. Información General y Título
-    const tituloPagina = document.querySelector('.dashboard-header').innerText;
-    const tituloCentral = document.querySelector('.titulo-central').innerText; // Aunque no se usa directamente en el PDF, se puede mantener para referencia
-    const riesgoTexto = document.getElementById('riskIndicator').innerText;
-
     let yOffset = 40; // Margen superior inicial
 
+    // 1. Título principal del documento y nombre del dispositivo
     doc.setFontSize(22);
-    doc.text(tituloPagina, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
+    doc.text("REPORTE DE MONITOREO DE DISPOSITIVO", doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
     yOffset += 30;
 
     doc.setFontSize(16);
+    // Ya el título principal es "REPORTE DE MONITOREO DE DISPOSITIVO", así que solo agregamos el hostname.
     doc.text(`Dispositivo: ${hostname}`, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
     yOffset += 20;
 
-    doc.setFontSize(12);
-    doc.text(riesgoTexto, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
-    yOffset += 30;
-
+    // Indicador de riesgo (si existe)
+    const riskIndicatorElement = document.getElementById('riskIndicator');
+    if (riskIndicatorElement) {
+        doc.setFontSize(12);
+        doc.text(riskIndicatorElement.innerText, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
+        yOffset += 30; // Espacio después del riesgo
+    }
 
     // 2. Capturar y añadir cada gráfico como imagen
-
     const chartContainers = document.querySelectorAll('.grafico-contenedor');
     for (const container of chartContainers) {
         const chartCanvas = container.querySelector('canvas');
-        const chartTitle = container.querySelector('h3').innerText;
+        const chartTitle = container.querySelector('h3').innerText; // El título H3 del contenedor del gráfico
 
         if (chartCanvas) {
-            // Añadir un título para el gráfico en el PDF
+            // ESTIMACIÓN de altura necesaria para el título del gráfico y el gráfico en sí.
+            // Esto es crucial para decidir si añadir una nueva página.
+            // Un gráfico típico puede ocupar 250-350pt de alto. Sumamos 20pt para el título.
+            const estimatedSpaceNeeded = 350; 
+
+            if (yOffset + estimatedSpaceNeeded > doc.internal.pageSize.height - 40) { // 40 es margen inferior
+                doc.addPage();
+                yOffset = 40; // Reiniciar yOffset para la nueva página
+            }
+
+            // Añadir el título específico del gráfico en el PDF
             doc.setFontSize(14);
             doc.text(chartTitle, 40, yOffset); // Margen izquierdo
-            yOffset += 20;
+            yOffset += 20; // Espacio después del título del gráfico
 
-            // Esperar a que html2canvas capture el canvas como imagen
+            // Aumentar la escala para mejorar la calidad y la legibilidad de los ejes
+            // html2canvas captura lo que está visible. Si el eje X se ve cortado en el navegador,
+            // puede que necesitemos asegurar que el contenedor del canvas sea lo suficientemente ancho.
+            // No obstante, una escala más alta ayuda a la nitidez.
             const canvasImage = await html2canvas(chartCanvas, {
-                scale: 2, // Aumenta la escala para mejor calidad
-                useCORS: true, // Importante si tienes imágenes de fuentes externas
-                logging: false // Desactiva logs de html2canvas
+                scale: 3, // Aumentado a 3 para mejor resolución y legibilidad del eje de tiempo
+                useCORS: true, 
+                logging: false,
+                // Asegúrate de que el contenedor .grafico-contenedor tiene un ancho definido en CSS
+                // para que html2canvas capture un área predecible.
+                // Si el eje de tiempo aún se ve cortado, podría ser un problema de CSS del canvas en el navegador
+                // donde el texto del label sale del área de renderizado del canvas.
             });
 
             const imgData = canvasImage.toDataURL('image/png');
-            const imgWidth = 500; // Ancho deseado para la imagen en el PDF
-            const imgHeight = (canvasImage.height * imgWidth) / canvasImage.width;
+            let imgWidth = 550; // Ancho deseado para la imagen en el PDF
+            let imgHeight = (canvasImage.height * imgWidth) / canvasImage.width;
 
-            // Comprobar si hay suficiente espacio en la página actual
-            if (yOffset + imgHeight > doc.internal.pageSize.height - 40) { // 40 es un margen inferior
-                doc.addPage();
-                yOffset = 40; // Reiniciar yOffset para la nueva página
-                doc.setFontSize(14);
-                doc.text(chartTitle, 40, yOffset);
-                yOffset += 20;
+            // Ajustar el tamaño de la imagen para que quepa en la página si es demasiado grande
+            const maxHeightAllowed = doc.internal.pageSize.height - yOffset - 40;
+            if (imgHeight > maxHeightAllowed) {
+                imgHeight = maxHeightAllowed;
+                imgWidth = (canvasImage.width * imgHeight) / canvasImage.height;
             }
-
+            
+            // Centrar la imagen
             doc.addImage(imgData, 'PNG', (doc.internal.pageSize.width - imgWidth) / 2, yOffset, imgWidth, imgHeight);
             yOffset += imgHeight + 30; // Espacio después de la imagen
         }
     }
 
-    // 3. Descargar el PDF
+    // 3. Añadir información general de hardware
+    // Asumiremos que el endpoint '/dispositivo/<hostname>/detalle_hardware_completo'
+    // devuelve un HTML que contiene la información de hardware dentro de un div o similar.
+    // **Importante:** Esta es la parte más compleja. Lo ideal sería que este endpoint devolviera JSON.
+    // Si devuelve HTML, necesitaremos parsearlo para extraer el texto.
+
+    // Añadir una nueva página para la información de hardware si es necesario
+    if (yOffset + 100 > doc.internal.pageSize.height - 40) { // Estimación de espacio para el título de la sección
+        doc.addPage();
+        yOffset = 40;
+    }
+
+    doc.setFontSize(18);
+    doc.text("INFORMACIÓN DETALLADA DEL HARDWARE", doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
+    yOffset += 30;
+    
+    // Cambiar color a negro para el texto general del hardware para mejor legibilidad en PDF
+    doc.setTextColor(0, 0, 0); 
+    doc.setFontSize(10); // Tamaño de fuente para el detalle del hardware
+
+    try {
+        // Hacemos un fetch a la URL que devuelve el HTML del detalle de hardware
+        const response = await fetch(`/dispositivo/${hostname}/detalle_hardware_completo`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const htmlText = await response.text();
+
+        // Crear un elemento DOM temporal para parsear el HTML
+        const parser = new DOMParser();
+        const docHtml = parser.parseFromString(htmlText, 'text/html');
+
+        // Intenta encontrar el contenedor principal de la información de hardware.
+        const hardwareInfoContainer = docHtml.querySelector('.cpu-z-style-container');
+        
+        if (hardwareInfoContainer) {
+            // Extraer el texto de todo el contenedor.
+            // Esto puede incluir labels y valores. Podemos intentar formatearlo.
+            const lines = hardwareInfoContainer.innerText.split('\n').filter(line => line.trim() !== '');
+
+            // Función auxiliar para añadir texto con salto de línea y manejo de página
+            const addParagraph = (text) => {
+                const splitText = doc.splitTextToSize(text, doc.internal.pageSize.width - 80); // 80pt = 40pt margen a cada lado
+                if (yOffset + (splitText.length * 12) > doc.internal.pageSize.height - 40) {
+                    doc.addPage();
+                    yOffset = 40;
+                }
+                doc.text(splitText, 40, yOffset);
+                yOffset += (splitText.length * 12);
+            };
+
+            lines.forEach(line => {
+                addParagraph(line.trim());
+            });
+
+        } else {
+            addParagraph("No se pudo encontrar el contenedor de información de hardware en la página.");
+            console.warn("No se encontró el contenedor de hardware para PDF en el HTML devuelto.");
+        }
+
+    } catch (err) {
+        console.error('Error al obtener o parsear datos de hardware:', err);
+        // Mensaje de error en el PDF
+        doc.setFontSize(12);
+        doc.setTextColor(255, 0, 0); // Rojo
+        doc.text("Error al cargar la información detallada del hardware.", 40, yOffset + 20);
+        doc.text("Asegúrese de que el endpoint de hardware funciona y que el selector es correcto.", 40, yOffset + 35);
+        yOffset += 60;
+    }
+    
+    // 4. Descargar el PDF
     doc.save(`Reporte_Dispositivo_${hostname}_${new Date().toISOString().slice(0, 10)}.pdf`);
 }
+
 </script>
 {% endblock %}
