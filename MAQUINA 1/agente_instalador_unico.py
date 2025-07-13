@@ -12,11 +12,11 @@ import wmi # Necesario para la recolección de información detallada de hardwar
 FLASK_APP_URL = "https://mi-monitor-red.onrender.com/receive_data"  # Cambiar por IP real si es necesario
 
 # Detectar la ruta base
-#if getattr(sys, 'frozen', False):
-#    RUTA_BASE = os.path.dirname(sys.executable)
-#else:
-#    RUTA_BASE = os.path.dirname(os.path.abspath(__file__))
-RUTA_BASE = r"C:\Program Files (x86)\AgenteMonitoreo"
+if getattr(sys, 'frozen', False):
+    RUTA_BASE = os.path.dirname(sys.executable)
+else:
+    RUTA_BASE = os.path.dirname(os.path.abspath(__file__))
+#RUTA_BASE = r"C:\Program Files (x86)\AgenteMonitoreo"
 
 # Ruta de LibreHardwareMonitor dentro de LibreHardwareMonitor-net472
 RUTA_LHM = os.path.join(RUTA_BASE, "LibreHardwareMonitor-net472", "LibreHardwareMonitor.exe")
