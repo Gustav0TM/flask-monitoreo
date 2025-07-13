@@ -33,24 +33,26 @@ def detalle_dispositivo(hostname):
     if hostname in latest_agent_data:
         riesgo = latest_agent_data[hostname].get("calculated_risk_percent")
 
-    # Formatear timestamps para ser legibles en el frontend (para gráficos)
-    formatted_timestamps = [time.strftime('%H:%M:%S', time.localtime(d['timestamp'])) for d in historial]
+    ultimo = latest_agent_data.get(hostname, {})
 
-    # Renderizar la plantilla detalle.html y pasar solo los datos necesarios para los gráficos
-    return render_template(
-        'dispositivo/detalle.html',
-        hostname=hostname,
-        timestamps=formatted_timestamps,
-        cpu=[d['cpu_percent'] for d in historial],
-        memory=[d['memory_percent'] for d in historial],
-        disks=[d['disk_percent'] for d in historial],
-        tx=[d['bytes_sent_mb'] for d in historial],
-        rx=[d['bytes_recv_mb'] for d in historial],
-        disks_total_gb=latest_agent_data.get(hostname, {}).get("disks_total_gb", {}),
-        disks_used_gb=latest_agent_data.get(hostname, {}).get("disks_used_gb", {}),
-        cpu_temperature=latest_agent_data.get(hostname, {}).get("cpu_temperature", "N/A"),
-        riesgo=riesgo
-    )
+     # Formatear timestamps a milisegundos para Chart.js con tipo 'time'
+    timestamps_ms = [int(d['timestamp'] * 1000) for d in historial]
+
+    respuesta = {
+        "timestamps": timestamps_ms, # Usar milisegundos
+        "cpu": [d.get('cpu_percent', 0) for d in historial], # Añadido .get con default 0 para seguridad
+        "memory": [d.get('memory_percent', 0) for d in historial], # Añadido .get con default 0 para seguridad
+        # El resto de tus listas de datos de gráficos
+        "disk": [d.get('disk_percent', 0) for d in historial],
+        "tx": [d.get('bytes_sent_mb', 0) for d in historial],
+        "rx": [d.get('bytes_recv_mb', 0) for d in historial],
+        "disks": ultimo.get("disks", {}),
+        "disks_used_gb": ultimo.get("disks_used_gb", {}),
+        "disks_total_gb": ultimo.get("disks_total_gb", {}),
+        "cpu_temperature": ultimo.get("cpu_temperature", "N/A"),
+        "riesgo": riesgo
+    }
+    return jsonify(respuesta)
 
 # Ruta para obtener los datos JSON del dispositivo (para actualización de gráficos vía AJAX)
 @dispositivo_bp.route('/get_device_data/<hostname>')
@@ -64,12 +66,13 @@ def get_device_data(hostname):
 
     ultimo = latest_agent_data.get(hostname, {})
     
-    # Formatear timestamps a milisegundos para Chart.js con tipo 'time'
+    # CAMBIO AQUÍ: Convertir timestamps a milisegundos para Chart.js con tipo 'time'
     timestamps_ms = [int(d['timestamp'] * 1000) for d in historial]
 
+
     respuesta = {
-        "timestamps": timestamps_ms, # Usar milisegundos
-        "cpu": [d.get('cpu_percent', 0) for d in historial],
+        "timestamps": timestamps_ms, # Usar los timestamps en milisegundos
+        "cpu": [d.get('cpu_percent', 0) for d in historial], # Usar .get con valor por defecto es buena práctica
         "memory": [d.get('memory_percent', 0) for d in historial],
         "disk": [d.get('disk_percent', 0) for d in historial],
         "tx": [d.get('bytes_sent_mb', 0) for d in historial],
