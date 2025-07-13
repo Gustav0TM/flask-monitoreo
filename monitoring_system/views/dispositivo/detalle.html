@@ -1,74 +1,60 @@
 {% extends 'layout/templates.html' %}
-
 {% block titulo %}Detalle del Dispositivo - {{ hostname }}{% endblock %}
-
 {% block contenido %}
 <header class="dashboard-header">
     Detalle del Dispositivo: {{ hostname }}
 </header>
-
 <main class="dashboard-main">
     <div class="titulo-con-riesgo">
         <h2 class="titulo-central">Monitoreo Gráfico en Tiempo Real</h2>
         <div id="riskIndicator" class="indicador-riesgo">Riesgo: N/A</div>
-        <div class="header-actions"> {# Contenedor para los botones del encabezado #}
+        <div class="header-actions">
+            <button class="boton-descarga" id="downloadButton">
+                <i class="fas fa-download"></i>
+            </button>
             <a href="{{ url_for('dashboard.index') }}" class="boton-retroceso">
                 Listado de Servidores
             </a>
-            {# Nuevo botón de descarga, ahora a la derecha del anterior #}
-            <button class="boton-descarga" id="downloadButton">
-                <i class="fas fa-download"></i> {# Icono de descarga #}
-            </button>
         </div>
     </div>
-
     <div class="contenedor-graficos">
-        
         {# Contenedor de CPU - Ahora el div completo es clickeable #}
         <div class="grafico-contenedor lineal clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_cpu', hostname=hostname) }}">
             <h3>Uso de CPU</h3>
             <canvas id="cpuChart"></canvas>
         </div>
-
         {# Contenedor de Memoria - Ahora el div completo es clickeable #}
         <div class="grafico-contenedor circular clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_memory', hostname=hostname) }}">
             <h3>Memoria (%)</h3>
             <canvas id="memoryChart"></canvas>
         </div>
-
         {# Contenedor de Disco - Ahora el div completo es clickeable #}
         <div class="grafico-contenedor circular clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_disk', hostname=hostname) }}">
             <h3>Disco (%) - Particiones</h3>
             <canvas id="diskChart"></canvas>
         </div>
-
         {# Contenedor de Tx/Rx (GPU) - Ahora el div completo es clickeable #}
         <div class="grafico-contenedor lineal clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_gpu', hostname=hostname) }}">
             <h3>Bytes Tx / Rx (MB)</h3>
             <canvas id="txRxChart"></canvas>
         </div>
-
     </div>
 </main>
 {% endblock %}
-
 {% block extra_js %}
 {# Asegúrate de tener Font Awesome en tu 'templates.html' o aquí para el ícono: 
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> 
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css "> 
 #}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js "></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels @2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js "></script>
 <script>
 let cpuChartInstance = null;
 let memoryChartInstance = null;
 let diskChartInstance = null;
 let txRxChartInstance = null;
-
 document.addEventListener('DOMContentLoaded', () => {
     const hostname = "{{ hostname }}";
-
     function actualizarDetalle() {
         fetch(`/get_device_data/${hostname}`)
             .then(response => response.json())
@@ -78,10 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(err => console.error('Error al obtener datos del dispositivo:', err));
     }
-
     actualizarDetalle();
     setInterval(actualizarDetalle, 5000);
-
     // Lógica para hacer los contenedores de gráfico clickeables
     document.querySelectorAll('.clickable-chart').forEach(chartContainer => {
         chartContainer.addEventListener('click', () => {
@@ -91,25 +75,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
-
-    // Lógica para el nuevo botón de descarga (por ahora, solo un console.log)
+    // Lógica para el nuevo botón de descarga
     document.getElementById('downloadButton').addEventListener('click', () => {
         console.log('Botón de descarga clickeado. La funcionalidad se añadirá más adelante.');
-        // Aquí se podría añadir la lógica para iniciar una descarga o abrir un modal
     });
 });
-
 function renderCharts(data) {
     const labels = data.timestamps; // Ya son milisegundos desde el backend
-
     if (cpuChartInstance) cpuChartInstance.destroy();
     if (memoryChartInstance) memoryChartInstance.destroy();
     if (diskChartInstance) diskChartInstance.destroy();
     if (txRxChartInstance) txRxChartInstance.destroy();
-
     // CPU
     const promedioCpu = data.cpu.length > 0 ? (data.cpu.reduce((sum, val) => sum + val, 0) / data.cpu.length).toFixed(1) : 'N/A';
-
     cpuChartInstance = new Chart(document.getElementById('cpuChart'), {
         type: 'line',
         data: {
@@ -167,7 +145,6 @@ function renderCharts(data) {
         },
         plugins: [ChartDataLabels]
     });
-
     // Memoria
     const memoriaUso = data.memory.length > 0 ? data.memory[data.memory.length - 1] : 0;
     memoryChartInstance = new Chart(document.getElementById('memoryChart'), {
@@ -197,81 +174,68 @@ function renderCharts(data) {
         },
         plugins: [ChartDataLabels]
     });
-
-// ===== Disco - Particiones (Usado y Libre con GB sobre las barras y porcentajes en la leyenda ordenados) =====
-
-// 1. Obtener datos de particiones
-const particiones = data.disks || {};
-const particionesLabels = Object.keys(particiones);
-const particionesUsado = Object.values(particiones);
-const particionesLibre = particionesUsado.map(uso => 100 - uso);
-
-const particionesTotalGb = data.disks_total_gb || {};
-const particionesUsadoGb = data.disks_used_gb || {};
-
-// 2. Solo los nombres al pie, en el mismo orden
-const etiquetas = particionesLabels;
-
-// 3. Construir leyenda dinámica en el mismo orden que las barras
-let leyendaUsado = 'Usado (';
-let leyendaLibre = 'Libre (';
-
-etiquetas.forEach(label => {
-    const porcentajeUsado = particiones[label] || 0;
-    const porcentajeLibre = 100 - porcentajeUsado;
-    leyendaUsado += `${label}: ${porcentajeUsado.toFixed(1)}% | `;
-    leyendaLibre += `${label}: ${porcentajeLibre.toFixed(1)}% | `;
-});
-
-// Eliminar el último separador " | " y cerrar paréntesis
-leyendaUsado = leyendaUsado.slice(0, -3) + ')';
-leyendaLibre = leyendaLibre.slice(0, -3) + ')';
-
-// 4. Render del gráfico
-diskChartInstance = new Chart(document.getElementById('diskChart'), {
-    type: 'bar',
-    data: {
-        labels: etiquetas,
-        datasets: [
-            {
-                label: leyendaUsado,
-                data: particionesUsado,
-                backgroundColor: '#7b1fa2',
-                datalabels: {
-                    color: 'white',
-                    font: { size: 10, weight: 'bold' },
-                    anchor: 'center',
-                    align: 'center',
-                    offset: 0,
-                    formatter: (value, ctx) => {
-                        const label = particionesLabels[ctx.dataIndex];
-                        const usadoGb = particionesUsadoGb[label] || 0;
-                        return `${usadoGb.toFixed(1)} GB`;
+    // Disco
+    const particiones = data.disks || {};
+    const particionesLabels = Object.keys(particiones);
+    const particionesUsado = Object.values(particiones);
+    const particionesLibre = particionesUsado.map(uso => 100 - uso);
+    const particionesTotalGb = data.disks_total_gb || {};
+    const particionesUsadoGb = data.disks_used_gb || {};
+    const etiquetas = particionesLabels;
+    let leyendaUsado = 'Usado (';
+    let leyendaLibre = 'Libre (';
+    etiquetas.forEach(label => {
+        const porcentajeUsado = particiones[label] || 0;
+        const porcentajeLibre = 100 - porcentajeUsado;
+        leyendaUsado += `${label}: ${porcentajeUsado.toFixed(1)}% | `;
+        leyendaLibre += `${label}: ${porcentajeLibre.toFixed(1)}% | `;
+    });
+    leyendaUsado = leyendaUsado.slice(0, -3) + ')';
+    leyendaLibre = leyendaLibre.slice(0, -3) + ')';
+    diskChartInstance = new Chart(document.getElementById('diskChart'), {
+        type: 'bar',
+        data: {
+            labels: etiquetas,
+            datasets: [
+                {
+                    label: leyendaUsado,
+                    data: particionesUsado,
+                    backgroundColor: '#7b1fa2',
+                    datalabels: {
+                        color: 'white',
+                        font: { size: 10, weight: 'bold' },
+                        anchor: 'center',
+                        align: 'center',
+                        offset: 0,
+                        formatter: (value, ctx) => {
+                            const label = particionesLabels[ctx.dataIndex];
+                            const usadoGb = particionesUsadoGb[label] || 0;
+                            return `${usadoGb.toFixed(1)} GB`;
+                        }
+                    }
+                },
+                {
+                    label: leyendaLibre,
+                    data: particionesLibre,
+                    backgroundColor: '#4a5568',
+                    datalabels: {
+                        color: 'white',
+                        font: { size: 10, weight: 'bold' },
+                        anchor: 'center',
+                        align: 'center',
+                        offset: 0,
+                        formatter: (value, ctx) => {
+                            const label = particionesLabels[ctx.dataIndex];
+                            const totalGb = particionesTotalGb[label] || 0;
+                            const usadoGb = particionesUsadoGb[label] || 0;
+                            const libreGb = (totalGb - usadoGb).toFixed(1);
+                            return `${libreGb} GB`;
+                        }
                     }
                 }
-            },
-            {
-                label: leyendaLibre,
-                data: particionesLibre,
-                backgroundColor: '#4a5568',
-                datalabels: {
-                    color: 'white',
-                    font: { size: 10, weight: 'bold' },
-                    anchor: 'center',
-                    align: 'center',
-                    offset: 0,
-                    formatter: (value, ctx) => {
-                        const label = particionesLabels[ctx.dataIndex];
-                        const totalGb = particionesTotalGb[label] || 0;
-                        const usadoGb = particionesUsadoGb[label] || 0;
-                        const libreGb = (totalGb - usadoGb).toFixed(1);
-                        return `${libreGb} GB`;
-                    }
-                }
-            }
-        ]
-    },
-    options: {
+            ]
+        },
+        options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
@@ -290,8 +254,6 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
         },
         plugins: [ChartDataLabels]
     });
-
-
     // Tx/Rx
     txRxChartInstance = new Chart(document.getElementById('txRxChart'), {
         type: 'bar',
@@ -364,11 +326,9 @@ diskChartInstance = new Chart(document.getElementById('diskChart'), {
         plugins: [ChartDataLabels]
     });
 }
-
 function mostrarRiesgo(data) {
     const riskIndicator = document.getElementById('riskIndicator');
     if (!riskIndicator) return;
-
     if (data.riesgo === undefined || data.riesgo === null) {
         riskIndicator.textContent = "Riesgo: N/A";
         riskIndicator.style.backgroundColor = "#4a5568";
@@ -385,12 +345,10 @@ function mostrarRiesgo(data) {
         }
     }
 }
-
 function calcularStepSize(tx, rx) {
     const maxTx = Math.max(...tx);
     const maxRx = Math.max(...rx);
     const maxValor = Math.max(maxTx, maxRx); 
-    
     if (isNaN(maxValor) || maxValor === 0) return 100;
     if (maxValor <= 10) return 1;
     if (maxValor <= 50) return 5;
@@ -400,62 +358,4 @@ function calcularStepSize(tx, rx) {
     return Math.ceil(maxValor / 10);
 }
 </script>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    /* Contenedor para los botones del encabezado, para que se alineen a la derecha */
-    .titulo-con-riesgo {
-        display: flex;
-        justify-content: space-between; /* Empuja el título a la izquierda y las acciones a la derecha */
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 10px; /* Espacio entre los botones */
-        align-items: center;
-    }
-
-    .boton-retroceso, .boton-descarga { /* Aplicamos estilos base a ambos botones */
-        background-color: #6a1b9a; /* Un color morado oscuro, similar a tus elementos visuales */
-        color: white;
-        padding: 8px 15px;
-        border: none;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: bold;
-        transition: background-color 0.3s ease, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        display: flex; 
-        align-items: center;
-        gap: 5px; 
-        cursor: pointer; /* Para indicar que son clickeables */
-    }
-
-    .boton-retroceso:hover, .boton-descarga:hover {
-        background-color: #4a148c; /* Un morado más oscuro para el hover */
-        transform: translateY(-3px); /* Ligeramente hacia arriba */
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Sombra para efecto de elevación */
-    }
-
-    /* Estilos específicos para el botón de descarga para hacerlo más compacto */
-    .boton-descarga {
-        padding: 8px 12px; /* Un poco menos de padding horizontal */
-        font-size: 1rem; /* Mantiene el tamaño del icono razonable */
-    }
-
-
-    /* Efectos visuales para los contenedores de gráficos clickeables */
-    .clickable-chart {
-        cursor: pointer; /* Indica que es clickeable */
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-
-    .clickable-chart:hover {
-        transform: translateY(-5px); /* Pequeño efecto de elevación al pasar el mouse */
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); /* Sombra más pronunciada */
-    }
-
-</style>
 {% endblock %}
