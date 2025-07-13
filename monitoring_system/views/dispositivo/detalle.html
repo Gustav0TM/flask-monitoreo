@@ -12,13 +12,13 @@
         <h2 class="titulo-central">Monitoreo Gráfico en Tiempo Real</h2>
         <div id="riskIndicator" class="indicador-riesgo">Riesgo: N/A</div>
         <div class="header-actions"> {# Contenedor para los botones del encabezado #}
-            {# Nuevo botón de descarga #}
-            <button class="boton-retroceso" id="downloadButton">
-                <i class="fas fa-download"></i> {# Icono de descarga, asumiendo Font Awesome #}
-            </button>
             <a href="{{ url_for('dashboard.index') }}" class="boton-retroceso">
                 Listado de Servidores
             </a>
+            {# Nuevo botón de descarga, ahora a la derecha del anterior #}
+            <button class="boton-descarga" id="downloadButton">
+                <i class="fas fa-download"></i> {# Icono de descarga #}
+            </button>
         </div>
     </div>
 
@@ -28,28 +28,24 @@
         <div class="grafico-contenedor lineal clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_cpu', hostname=hostname) }}">
             <h3>Uso de CPU</h3>
             <canvas id="cpuChart"></canvas>
-            {# El botón "Detalle CPU" ha sido eliminado #}
         </div>
 
         {# Contenedor de Memoria - Ahora el div completo es clickeable #}
         <div class="grafico-contenedor circular clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_memory', hostname=hostname) }}">
             <h3>Memoria (%)</h3>
             <canvas id="memoryChart"></canvas>
-            {# El botón "Detalle Memoria" ha sido eliminado #}
         </div>
 
         {# Contenedor de Disco - Ahora el div completo es clickeable #}
         <div class="grafico-contenedor circular clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_disk', hostname=hostname) }}">
             <h3>Disco (%) - Particiones</h3>
             <canvas id="diskChart"></canvas>
-            {# El botón "Detalle Disco" ha sido eliminado #}
         </div>
 
         {# Contenedor de Tx/Rx (GPU) - Ahora el div completo es clickeable #}
         <div class="grafico-contenedor lineal clickable-chart" data-href="{{ url_for('dispositivo.detalle_hardware_gpu', hostname=hostname) }}">
             <h3>Bytes Tx / Rx (MB)</h3>
             <canvas id="txRxChart"></canvas>
-            {# El botón "Detalle GPU" ha sido eliminado #}
         </div>
 
     </div>
@@ -408,7 +404,49 @@ function calcularStepSize(tx, rx) {
 
 {% block extra_css %}
 <style>
-    /* Asegúrate de que los estilos para .grafico-contenedor y .boton-retroceso sean apropiados */
+    /* Contenedor para los botones del encabezado, para que se alineen a la derecha */
+    .titulo-con-riesgo {
+        display: flex;
+        justify-content: space-between; /* Empuja el título a la izquierda y las acciones a la derecha */
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px; /* Espacio entre los botones */
+        align-items: center;
+    }
+
+    .boton-retroceso, .boton-descarga { /* Aplicamos estilos base a ambos botones */
+        background-color: #6a1b9a; /* Un color morado oscuro, similar a tus elementos visuales */
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.3s ease, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        display: flex; 
+        align-items: center;
+        gap: 5px; 
+        cursor: pointer; /* Para indicar que son clickeables */
+    }
+
+    .boton-retroceso:hover, .boton-descarga:hover {
+        background-color: #4a148c; /* Un morado más oscuro para el hover */
+        transform: translateY(-3px); /* Ligeramente hacia arriba */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Sombra para efecto de elevación */
+    }
+
+    /* Estilos específicos para el botón de descarga para hacerlo más compacto */
+    .boton-descarga {
+        padding: 8px 12px; /* Un poco menos de padding horizontal */
+        font-size: 1rem; /* Mantiene el tamaño del icono razonable */
+    }
+
+
+    /* Efectos visuales para los contenedores de gráficos clickeables */
     .clickable-chart {
         cursor: pointer; /* Indica que es clickeable */
         transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -419,31 +457,5 @@ function calcularStepSize(tx, rx) {
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); /* Sombra más pronunciada */
     }
 
-    /* Estilos para el nuevo botón de descarga y el contenedor de acciones */
-    .header-actions {
-        display: flex;
-        gap: 10px; /* Espacio entre los botones */
-        align-items: center;
-    }
-
-    .boton-retroceso {
-        /* Tus estilos existentes para .boton-retroceso */
-        background-color: #007bff; /* Color de ejemplo, usa el que ya tengas */
-        color: white;
-        padding: 8px 15px;
-        border: none;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: bold;
-        transition: background-color 0.3s ease;
-        display: flex; /* Para alinear el icono y el texto */
-        align-items: center;
-        gap: 5px; /* Espacio entre el icono y el texto */
-    }
-
-    .boton-retroceso:hover {
-        background-color: #0056b3; /* Color de hover */
-    }
-    
 </style>
 {% endblock %}
