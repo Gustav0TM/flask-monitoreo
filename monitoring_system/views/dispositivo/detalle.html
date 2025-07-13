@@ -52,13 +52,6 @@
 {% endblock %}
 
 {% block extra_js %}
-{# Asegúrate de tener Font Awesome en tu 'templates.html' o aquí para el ícono: 
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> 
-#}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-
 <script>
 let cpuChartInstance = null;
 let memoryChartInstance = null;
@@ -91,10 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Lógica para el nuevo botón de descarga (por ahora, solo un console.log)
+    // Lógica para el nuevo botón de descarga
     document.getElementById('downloadButton').addEventListener('click', () => {
-        console.log('Botón de descarga clickeado. La funcionalidad se añadirá más adelante.');
-        // Aquí se podría añadir la lógica para iniciar una descarga o abrir un modal
+        generarPDFReporte(hostname);
     });
 });
 
@@ -397,6 +389,72 @@ function calcularStepSize(tx, rx) {
     if (maxValor <= 500) return 50;
     if (maxValor <= 1000) return 100;
     return Math.ceil(maxValor / 10);
+}
+
+async function generarPDFReporte(hostname) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'pt', 'a4'); // 'p' para retrato, 'pt' para puntos, 'a4' para tamaño de página
+
+    // 1. Información General y Título
+    const tituloPagina = document.querySelector('.dashboard-header').innerText;
+    const tituloCentral = document.querySelector('.titulo-central').innerText; // Aunque no se usa directamente en el PDF, se puede mantener para referencia
+    const riesgoTexto = document.getElementById('riskIndicator').innerText;
+
+    let yOffset = 40; // Margen superior inicial
+
+    doc.setFontSize(22);
+    doc.text(tituloPagina, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
+    yOffset += 30;
+
+    doc.setFontSize(16);
+    doc.text(`Dispositivo: ${hostname}`, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
+    yOffset += 20;
+
+    doc.setFontSize(12);
+    doc.text(riesgoTexto, doc.internal.pageSize.width / 2, yOffset, { align: 'center' });
+    yOffset += 30;
+
+
+    // 2. Capturar y añadir cada gráfico como imagen
+
+    const chartContainers = document.querySelectorAll('.grafico-contenedor');
+    for (const container of chartContainers) {
+        const chartCanvas = container.querySelector('canvas');
+        const chartTitle = container.querySelector('h3').innerText;
+
+        if (chartCanvas) {
+            // Añadir un título para el gráfico en el PDF
+            doc.setFontSize(14);
+            doc.text(chartTitle, 40, yOffset); // Margen izquierdo
+            yOffset += 20;
+
+            // Esperar a que html2canvas capture el canvas como imagen
+            const canvasImage = await html2canvas(chartCanvas, {
+                scale: 2, // Aumenta la escala para mejor calidad
+                useCORS: true, // Importante si tienes imágenes de fuentes externas
+                logging: false // Desactiva logs de html2canvas
+            });
+
+            const imgData = canvasImage.toDataURL('image/png');
+            const imgWidth = 500; // Ancho deseado para la imagen en el PDF
+            const imgHeight = (canvasImage.height * imgWidth) / canvasImage.width;
+
+            // Comprobar si hay suficiente espacio en la página actual
+            if (yOffset + imgHeight > doc.internal.pageSize.height - 40) { // 40 es un margen inferior
+                doc.addPage();
+                yOffset = 40; // Reiniciar yOffset para la nueva página
+                doc.setFontSize(14);
+                doc.text(chartTitle, 40, yOffset);
+                yOffset += 20;
+            }
+
+            doc.addImage(imgData, 'PNG', (doc.internal.pageSize.width - imgWidth) / 2, yOffset, imgWidth, imgHeight);
+            yOffset += imgHeight + 30; // Espacio después de la imagen
+        }
+    }
+
+    // 3. Descargar el PDF
+    doc.save(`Reporte_Dispositivo_${hostname}_${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 </script>
 {% endblock %}
