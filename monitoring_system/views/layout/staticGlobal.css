@@ -198,7 +198,7 @@ header.dashboard-header {
 /* Contenedor principal del dashboard */
 main.dashboard-main {
     padding: 2rem;
-    max-width: 1200px;
+    max-width: 1250px;
     margin: 2rem auto;
     background: var(--card-background);
     border-radius: 12px;
@@ -315,7 +315,7 @@ main.dashboard-main {
 .contenedor-graficos {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 8px; /* Separación mínima entre los cuadros */
+    gap: 15px;
     width: 100%;
     max-width: 1400px;
     margin-top: 1rem;
@@ -474,7 +474,7 @@ main.dashboard-main {
 }
 
 /* Estilos comunes para botones del encabezado */
-.boton-retroceso, .boton-descarga {
+.boton-retroceso{
     background-color: #6a1b9a; /* Morado oscuro */
     color: white;
     padding: 10px 15px; /* Ajusta el padding para centrar el contenido */
@@ -487,7 +487,26 @@ main.dashboard-main {
     align-items: center;
     gap: 5px;
     cursor: pointer;
-    height: 40px; /* Altura fija para alinearlos */
+    height: 25px; /* Altura */
+    width: auto;
+}
+
+/* Estilos comunes para botones del encabezado */
+.boton-descarga {
+    background-color: #6a1b9a; /* Morado oscuro */
+    color: white;
+    padding: 10px 15px; /* Ajusta el padding para centrar el contenido */
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    width: 80px;
+    height: 40px;
 }
 
 /* Efectos hover para ambos botones */
