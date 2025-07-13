@@ -140,7 +140,7 @@ def detalle_hardware_memory(hostname):
 @dispositivo_bp.route('/dispositivo/<hostname>/detalle_hardware_disk')
 @login_required
 def detalle_hardware_disk(hostname):
-    return _render_hardware_detail(hostname, "Disks", "ALMACENAMIENTO (DISCOS)")
+    return _render_hardware_detail(hostname, "Disks", "ALMACENAMIENTO")
 
 # Ruta para el detalle de Gráficos (GPU)
 @dispositivo_bp.route('/dispositivo/<hostname>/detalle_hardware_gpu')
